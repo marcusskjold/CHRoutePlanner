@@ -47,7 +47,7 @@ public class StopDijkstra implements SPFinder {
                 if (v == t) {
                     break;
                 }
-                for (Edge e : G.adj(v)){
+                for (Edge e : G.getEdges(v)){
                     relax(e, distTo, edgeTo, pq);
                 }
             }

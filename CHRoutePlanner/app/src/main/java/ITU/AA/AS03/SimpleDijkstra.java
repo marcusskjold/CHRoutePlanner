@@ -93,7 +93,8 @@ public class SimpleDijkstra implements SPFinder {
             // relax vertices in order of distance from s
             while (!pq.isEmpty()) {
                 int v = pq.delMin();
-                for (Edge e : G.adj(v)){
+                //for (Edge e : G.adj(v)){
+                for (Edge e : G.getEdges(v)){
                     relax(e, distTo, edgeTo, pq);
                 }
             }
