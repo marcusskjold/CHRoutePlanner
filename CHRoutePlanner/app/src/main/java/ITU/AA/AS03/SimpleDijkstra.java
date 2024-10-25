@@ -1,7 +1,13 @@
 package ITU.AA.AS03;
 
 
+//TODO: adapt to how we implement the graph, edges, path etc.
+
 import java.util.Stack;
+
+import com.google.common.collect.HashBiMap;
+
+import java.util.HashMap;
 
 public class SimpleDijkstra implements SPFinder {
     
@@ -34,6 +40,9 @@ public class SimpleDijkstra implements SPFinder {
      */
         
     
+
+
+
         /**
          * Computes a shortest-paths tree from the source vertex {@code s} to every other
          * vertex in the edge-weighted digraph {@code G}.
@@ -57,6 +66,48 @@ public class SimpleDijkstra implements SPFinder {
                 if (pq.contains(w)) pq.decreaseKey(w, distTo[w]);
                 else                pq.insert(w, distTo[w]);
             }
+        }
+
+
+        public double findSP(Graph G, int s, int t) {
+            //Initialize distTo and edgeTo arrays
+
+            double[] distTo= new double[G.V()];          // distTo[v] = distance  of shortest s->v path
+            //HashMap<Long,Double> distTo = new HashMap<>();
+            Edge[] edgeTo= new Edge[G.V()];    // edgeTo[v] = last edge on shortest s->v path 
+            //HashMap<Long,Edge> edgeTo = new HashMap<>();
+            //Initialize distances
+            for (int v = 0; v < G.V(); v++)
+                    {distTo[v] = Double.POSITIVE_INFINITY;}
+            distTo[s] = 0.0;
+            //for (Long v = 0L; v < G.V(); v++) {
+            //    distTo.put(v, Double.POSITIVE_INFINITY);
+            //}
+            //distTo.put(s, 0.0);
+        
+            
+            IndexMinPQ<Double> pq = new IndexMinPQ<Double>(G.V()); // priority queue of vertices
+            //insert the source into the priorityqueue
+            pq.insert(s, distTo[s]);
+            //pq.insert(s, distTo.get(s));
+            // relax vertices in order of distance from s
+            while (!pq.isEmpty()) {
+                int v = pq.delMin();
+                for (Edge e : G.adj(v)){
+                    relax(e, distTo, edgeTo, pq);
+                }
+            }
+            //If there is not a path:
+            if (!(distTo[t] < Double.POSITIVE_INFINITY)) return -1.0;
+            //Else return distance
+            else return distTo[t];
+
+            ////Option for later: Recreate a path and return it
+            //Path path = new Path();
+            //for (Edge e = edgeTo[t]; e != null; e = edgeTo[e.from()]) {
+            //    path.add(e);
+            //}
+            //return path;
         }
     
         ///**
@@ -181,38 +232,6 @@ public class SimpleDijkstra implements SPFinder {
 //    
 //    }
     
-    
-    
-
-
-    public Path findSP(Graph G, Long s, Long t) {
-        //Initialize distTo and edgeTo arrays
-        double[] distTo= new double[G.V()];          // distTo[v] = distance  of shortest s->v path
-        Edge[] edgeTo= new Edge[G.V()];    // edgeTo[v] = last edge on shortest s->v path 
-        //Initialize distances
-        for (int v = 0; v < G.V(); v++)
-                {distTo[v] = Double.POSITIVE_INFINITY;}
-        distTo[s] = 0.0;
-    
-        
-        IndexMinPQ<Double> pq = new IndexMinPQ<Double>(G.V()); // priority queue of vertices
-        //insert the source into the priorityqueue
-        pq.insert(s, distTo[s]);
-        // relax vertices in order of distance from s
-        while (!pq.isEmpty()) {
-            int v = pq.delMin();
-            for (Edge e : G.adj(v))
-                relax(e, distTo, edgeTo, pq);
-        }
-        //If there is not a path:
-        if (!(distTo[t] < Double.POSITIVE_INFINITY)) return null;
-        //Else create a path and return it (Stack for now)
-        Path path = new Path();
-        for (Edge e = edgeTo[t]; e != null; e = edgeTo[e.from()]) {
-            path.add(e);
-        }
-        return path;
-    }
 }
 
 
