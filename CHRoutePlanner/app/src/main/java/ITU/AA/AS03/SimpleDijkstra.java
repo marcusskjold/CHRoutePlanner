@@ -58,7 +58,7 @@ public class SimpleDijkstra implements SPFinder {
         }
     
         // relax edge e and update pq if changed
-        private void relax(Edge e, double[] distTo, Edge[] edgeTo, IndexMinPQ pq) {
+        private void relax(Edge e, double[] distTo, Edge[] edgeTo, IndexMinPQ<Double> pq) {
             int v = e.from(), w = e.to();
             if (distTo[w] > distTo[v] + e.weight()) {
                 distTo[w] = distTo[v] + e.weight();
