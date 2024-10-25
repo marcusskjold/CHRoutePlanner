@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -52,5 +53,25 @@ public class Graph {
         }
 
         sc.close();
+    }
+
+    public List<Edge> getEdges(int index) {
+        return edges[index];
+    }
+
+    public float[] getLocation(int index) {
+        return locs[index];
+    }
+
+    public long getID(int index) {
+        return ids[index];
+    }
+
+    public int V() {
+        return V;
+    }
+
+    public int E() {
+        return E;
     }
 }
