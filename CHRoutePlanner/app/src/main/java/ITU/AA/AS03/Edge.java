@@ -4,17 +4,17 @@ package ITU.AA.AS03;
 
 
 public class Edge {
+    private final int u;
     private final int v;
-    private final int w;
-    private final double weight;
+    private final double w;
 
-    public Edge(int v, int w, double weight) {
+    public Edge(int u, int v, double w) {
+        if (u < 0) throw new IllegalArgumentException("Vertex names must be non-negative integers");
         if (v < 0) throw new IllegalArgumentException("Vertex names must be non-negative integers");
-        if (w < 0) throw new IllegalArgumentException("Vertex names must be non-negative integers");
-        if (Double.isNaN(weight)) throw new IllegalArgumentException("Weight is NaN");
+        if (Double.isNaN(w)) throw new IllegalArgumentException("Weight is NaN");
+        this.u = u;
         this.v = v;
-        this.w = w;
-        this.weight = weight;
+        this.w= w;
     }
     
      /**
@@ -22,7 +22,7 @@ public class Edge {
      * @return the tail vertex of the directed edge
      */
     public int from() {
-        return v;
+        return u;
     }
 
     /**
@@ -30,7 +30,7 @@ public class Edge {
      * @return the head vertex of the directed edge
      */
     public int to() {
-        return w;
+        return v;
     }
 
     /**
@@ -38,6 +38,6 @@ public class Edge {
      * @return the weight of the directed edge
      */
     public double weight() {
-        return weight;
+        return w;
     }
 }
