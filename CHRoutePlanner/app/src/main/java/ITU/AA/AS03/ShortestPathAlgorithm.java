@@ -11,10 +11,6 @@ interface ShortestPathAlgorithm {
      */
     boolean calculate(int source, int target); 
     
-    /** Reset the algorithm for a new query.
-     */
-    void reset();
-
     /** 
      * @return the number of edges relaxed for the query.
      */

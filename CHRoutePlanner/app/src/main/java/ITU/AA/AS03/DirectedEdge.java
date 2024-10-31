@@ -39,4 +39,28 @@ public class DirectedEdge {
     public int weight() {
         return w;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) { return false; }
+        if (obj.getClass() != this.getClass()) { return false; }
+
+        final DirectedEdge other = (DirectedEdge) obj;
+
+        if (this.u != other.u) { return false; }
+        if (this.v != other.v) { return false; }
+        if (this.w != other.w) { return false; }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * (hash + u * 1000);
+        hash = 47 * (hash + v * 10);
+        hash = 47 * (hash + w);
+        hash = hash + (13 * (u + v + w));
+        return hash;
+    }
 }
