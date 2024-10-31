@@ -1,24 +1,22 @@
 package ITU.AA.AS03;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-public class Graph {
+public class IndexedGraph {
     private Map<Long, Integer> idTranslator;
     private int V; // Number of nodes
     private int E;
     private long[] ids;
     private float[][] locs;
-    private LinkedList<Edge>[] edges;
+    private List<DirectedEdge>[] edges;
 
-    public Graph(InputStream input) throws IOException {
+    public IndexedGraph(InputStream input) throws IOException {
         if (input == null) throw new IllegalArgumentException("Input is null");
         Scanner sc = new Scanner(input);
         V = sc.nextInt();
@@ -33,7 +31,7 @@ public class Graph {
         }
         ids = new long[V];
         locs = new float[V][2];
-        edges = (LinkedList<Edge>[]) new LinkedList[V];
+        edges = (LinkedList<DirectedEdge>[]) new LinkedList[V];
         idTranslator = new HashMap<Long, Integer>(V * 2, (float) 0.5);
 
         for (int i = 0; i < V; i++) {
@@ -48,14 +46,14 @@ public class Graph {
             int u = idTranslator.get(sc.nextLong());
             int v = idTranslator.get(sc.nextLong());
             int w = sc.nextInt();
-            edges[u].add(new Edge(u, v, w));
-            edges[v].add(new Edge(v, u, w));
+            edges[u].add(new DirectedEdge(u, v, w));
+            edges[v].add(new DirectedEdge(v, u, w));
         }
 
         sc.close();
     }
 
-    public List<Edge> getEdges(int index) {
+    public List<DirectedEdge> getEdges(int index) {
         return edges[index];
     }
 
