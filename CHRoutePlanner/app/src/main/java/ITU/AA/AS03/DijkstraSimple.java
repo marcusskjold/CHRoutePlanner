@@ -41,7 +41,7 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
     public DijkstraSimple(IndexedGraph graph) {
         if (graph == null)
             throw new IllegalArgumentException("Graph must not be null.");
-        V = G.V();
+        V = G.V(); //graph rather than G should be used here?***
         if (V < 1)
             throw new IllegalArgumentException("Graph must contain nodes.");
         this.G = graph;
@@ -83,6 +83,28 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
         else return true;
 
     }
+
+    //Potential refactoring from calculate to make bidirectional possible
+    //Name could be better
+    public void setUpSearch(int source, int target) {
+        ready = false;
+        s = source;
+        t = target;
+        distTo[source] = 0;
+        pq.insert(source, distTo[source]);
+        edgeRelaxationCount = 0;
+    }
+
+    //Helper method to make fetching priorityqueue in Bi-Dijkstra possible
+    public IndexMinPQ<Integer> getPq() {
+        return pq;
+    }
+
+    //Helper method to retreive a specific distance
+    public int distance(int v) {
+        return distTo[v];
+    }
+
     
     // ============ Query methods, non-state changing =======
 
