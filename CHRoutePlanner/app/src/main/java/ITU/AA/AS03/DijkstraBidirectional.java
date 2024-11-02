@@ -15,6 +15,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
     private DijkstraEarlyStop dijkstraR;
     private int d;
     protected boolean[] settled; //Array to keep track of visited nodes (by either end)
+    private int meetPoint; //Point where the shortest paths meet (for path retreival)
     
 
 
@@ -28,6 +29,8 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
         //New stuff:
         settled = new boolean[graph.V()]; //Initialize array to check whether already visited
         d = Integer.MAX_VALUE;
+        //initilaize meetpoint to some dummy that indicates no path found (maybe not necessary?***)
+        meetPoint = -1;
     }
 
 
@@ -79,15 +82,20 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
             }
             settled[u] = true;
                 for (DirectedEdge e : G.getEdges(u)) { //Maybe refactor this
+                    //relaxes from either side depending on which had lowest min-value in pq
                     if(currentPq == pqL) {
                         relax(e, dijkstraL);
                     } else {
                         relax(e, dijkstraR);
                     }
+                    //Checks whether the distance to the vertex newly relaxed (or tried to relax) edge pointed to is shorter than current shortest path
+                    //If so updates shortest path
                     int v = e.to();
                     int distCandidate = dijkstraL.distance(v) + dijkstraR.distance(v);
                     if(d > distCandidate) {
                         d = distCandidate;
+                        //And update place where new shortest path meet
+                        meetPoint = v;
                     }
                 }
             
@@ -115,6 +123,10 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
     //TODO: Implement
     @Override
     public Iterable<DirectedEdge> retrievePath() {
+        Iterable<DirectedEdge> pathL = dijkstraL.retrievePath(meetPoint);
+        Iterable<DirectedEdge> pathR = dijkstraR.retrievePath(meetPoint);
+        
+        //Concatenate the two paths in some way. Maybe use other structure than stack
         return null;
     }
 }

@@ -105,6 +105,17 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
         return distTo[v];
     }
 
+    //Generalized helper method to retreive shortest path to specific vertex
+    public Iterable<DirectedEdge> retrievePath(int v) {
+        if (ready) return null;                                 // If not calculated
+        if (!(distTo[v] < Integer.MAX_VALUE)) return null;      // If not connected
+        Stack<DirectedEdge> path = new Stack<DirectedEdge>();
+        for (DirectedEdge e = edgeTo[v]; e != null; e = edgeTo[e.from()]) {
+            path.push(e);
+        }
+        return path;
+    }
+
     
     // ============ Query methods, non-state changing =======
 
