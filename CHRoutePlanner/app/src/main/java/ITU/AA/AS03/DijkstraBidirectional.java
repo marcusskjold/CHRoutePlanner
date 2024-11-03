@@ -13,7 +13,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
     ////If using two Dijkstras
     private DijkstraEarlyStop dijkstraL;
     private DijkstraEarlyStop dijkstraR;
-    private int d;
+    private int d; //shortest path distance
     protected boolean[] settled; //Array to keep track of visited nodes (by either end)
     private int meetPoint; //Point where the shortest paths meet (for path retreival)
     
@@ -25,9 +25,9 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
         ////If using two dijkstras
         dijkstraL = new DijkstraEarlyStop(graph);
         dijkstraR = new DijkstraEarlyStop(graph);
-
+        V = graph.V();
         //New stuff:
-        settled = new boolean[graph.V()]; //Initialize array to check whether already visited
+        settled = new boolean[V]; //Initialize array to check whether already visited
         d = Integer.MAX_VALUE;
         //initilaize meetpoint to some dummy that indicates no path found (maybe not necessary?***)
         meetPoint = -1;
@@ -71,7 +71,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
                 IndexMinPQ<Integer> currentPq; 
                 //Choose node from left or right pq depending on order
                 //We would always go with pqR first with this model (Which seems okay?)***
-            if(pqR.isEmpty() || pqL.minKey() < pqR.minKey()) { //Lazy evaluation -> if pqR empty then pqL can't be
+            if(pqR.isEmpty() || (!pqL.isEmpty() && (pqL.minKey() < pqR.minKey()) )) { //Lazy evaluation -> if pqR empty then pqL can't be
                 currentPq = pqL;
             } else { //All other cases (either pqL empty or pqR.minkey() < pqL.minkey() (if second clause above false))
                 currentPq = pqR;
