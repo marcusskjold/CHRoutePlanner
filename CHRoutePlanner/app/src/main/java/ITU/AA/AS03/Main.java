@@ -53,6 +53,7 @@ public class Main {
             int d = sp.distance();
             //debug print-statement:
             System.out.println(d);
+            System.out.println("relaxed edges: " + sp.relaxedEdges());
         }
     }
 
@@ -67,7 +68,7 @@ public class Main {
             InputStream input = new FileInputStream("denmark.graph.txt");
             IndexedGraph graph = new IndexedGraph(input);
             System.out.println("finished generating graph");
-            computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 100, DEFAULT_SEED);
+            computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 1, DEFAULT_SEED);
             //computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 6, DEFAULT_SEED);
         } catch (IOException e) {
             e.printStackTrace();

@@ -21,6 +21,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
 
 
     public DijkstraBidirectional(IndexedGraph graph) {
+        ready = true; //design choice whether this should also have ready and how***
         G= graph;
         ////If using two dijkstras
         dijkstraL = new DijkstraEarlyStop(graph);
@@ -42,7 +43,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
             throw new IllegalArgumentException("source is not a valid node index");
         if (target < 0 || target >= V)
             throw new IllegalArgumentException("target is not a valid node index");
-
+        ready = false;
         //shortest distance to be returned (should maybe be a field?)***
         d = Integer.MAX_VALUE;
         dijkstraL.setUpSearch(source, target);

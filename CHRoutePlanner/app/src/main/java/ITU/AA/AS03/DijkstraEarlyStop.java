@@ -9,7 +9,9 @@ public class DijkstraEarlyStop extends DijkstraSimple {
     @Override protected void findShortestPath() {
         while (!pq.isEmpty()) {
             int node = pq.delMin();
-            if (node == t)
+            if (node == t) {
+                break;
+            }
             for (DirectedEdge e : G.getEdges(node)){
                 relax(e);
             }
