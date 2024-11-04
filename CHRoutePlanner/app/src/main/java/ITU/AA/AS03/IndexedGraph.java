@@ -25,6 +25,9 @@ public class IndexedGraph {
         locs = new float[maxSize][2];
         edges = (LinkedList<DirectedEdge>[]) new LinkedList[maxSize];
         idTranslator = new HashMap<Long, Integer>(maxSize * 2, (float) 0.5);
+        for (int i = 0; i < V; i++) {
+            edges[i] = new LinkedList<>();
+        }
     }
 
     /** Generate undirected graph from input stream
@@ -54,6 +57,7 @@ public class IndexedGraph {
             idTranslator.put(id, i);
             locs[i][0] = sc.nextFloat();
             locs[i][1] = sc.nextFloat();
+            edges[i] = new LinkedList<>();
         }
 
         for (int i = 0; i < E; i++) {
@@ -66,7 +70,7 @@ public class IndexedGraph {
 
         sc.close();
     }
-    
+
     // TODO: Add edge method and add node method.
     public void addEdge(DirectedEdge e) {
         edges[e.from()].add(e);
