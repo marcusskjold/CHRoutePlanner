@@ -1,12 +1,88 @@
 package ITU.AA.AS03;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 /**
  * DijkstraSimpleTest
  */
+@TestInstance(Lifecycle.PER_CLASS)
 public class DijkstraSimpleTest {
 
+    DijkstraSimple ds;
+
+    // Errors
+    IndexedGraph noNodeGraph;
+    TestData noCalculation;
+    TestData noEdges;
+    TestData disconnectedNodes;
+    TestData sourceIllegal;
+    TestData targetIllegal;
+
+    // Validation
+    TestData sourcesEqual;
+    TestData sourcesClose;
+    TestData sourcesFar;
+    TestData multiplePaths;
+    TestData containsZeroWeights;
+
+    @Nested
+    class TestData {
+        IndexedGraph graph;
+        boolean calculate;
+        int distance;
+        int relaxedEdges;
+        LinkedList<DirectedEdge> path;
+    }
+
+    @BeforeAll
+    void createTestData() {
+
+        noNodeGraph = new IndexedGraph(0);
+
+        noCalculation = new TestData();
+        noCalculation.path = null;
+        noCalculation.relaxedEdges = -1;
+        noCalculation.distance = Integer.MAX_VALUE;
+
+        
+
+
+    }
+
+    @BeforeEach
+    void resetAlgorithm() {
+        ds = null;
+    }
+
+    // ================== TESTS ===========================
+
+    // ================== ERROR ===========================
+
+    @Test void graphContainsNoNodes_constructor_throws() {
+        assertThrows(IllegalArgumentException.class, () -> 
+            ds = new DijkstraSimple(noNodeGraph));
+    }
+
+    @Test void null_constructor_throws() {
+        assertThrows(IllegalArgumentException.class, () ->
+            ds = new DijkstraSimple(null));
+    }
+    @Test void noCalculation_distance_returnsMAX() {}
+    @Test void noCalculation_retrievePath_returnsNull() {}
+    @Test void noCalcultion_relaxedEdges_returnMinusOne() {}
+
+
+}
         /* # List of test cases.
          *
          * ## Data input
@@ -24,6 +100,12 @@ public class DijkstraSimpleTest {
          * int componentRelaxedEdges = 2
          * int normalRelaxedEdges = 5
          * int targetCloseDistance = 10
+         * int longDistance = 
+         * int longRelaxedEdges = 
+         *
+         * Paths:
+         * targetClosePath =
+         * longPath
          *
          * Graphs:
          *
@@ -31,6 +113,8 @@ public class DijkstraSimpleTest {
          * Graph noEdgeGraph (4, 0)
          * Graph nodesDisconnectedGraph (4 1, 0 1 10, 1 2 10)
          * Graph neutralGraph (4 5, 0 1 10, 0 2 20, 1 2 5, 1 3 30, 2 3 10)
+         * Graph longGraph
+         *
          *
          *
          * ## Test for wrong uses
@@ -39,15 +123,18 @@ public class DijkstraSimpleTest {
          * - [x] No test, graph is responsible
          *
          * If graph illegal (no nodes)
-         * - [ ] Constructor should catch this  graphContainsNoNodes_constructor_throws(noNodeGraph)
+         * - [x] Constructor should catch this  graphContainsNoNodes_constructor_throws(noNodeGraph)
          *
          * If graph is null
-         * - [ ] Constructor should catch this  null_constructor_throws(null)
+         * - [x] Constructor should catch this  null_constructor_throws(null)
          *
          * Query, but not calculated            
          * - [ ] distance                       noCalculation_distance_returnsMAX()                 ->  MAX_VALUE
          * - [ ] retrievePath                   noCalculation_retrievePath_returnsNull()            ->  null
          * - [ ] relaxedEdges                   noCalcultion_relaxedEdges_returnMinusOne()          ->  -1
+         *
+         * Calculate twice
+         * - [ ] calculate                      calculateTwice_calculate_returnsFalse()
          *
          * If graph contains no edges           noEdgeGraph sNeutral tNeutral
          * - [ ] calculate                      graphContainsNoEdges_calculate_returnsFalse()       -> false
@@ -69,7 +156,7 @@ public class DijkstraSimpleTest {
          * 
          * ## Verification
          *
-         * If s & t is equal                    neutralGraph, s = sNeutral, t = tNeutral
+         * If s & t is equal                    neutralGraph, s = sNeutral, t = sNeutral
          * - [ ] calculate                      sourceEqual_calculate_returnsTrue()                 -> true
          * - [ ] distance                       sourceEqual_distrance_returnsZero()                 -> 0
          * - [ ] retrievePath                   sourceEqual_retrievePath_returnsNull()              -> null
@@ -78,79 +165,26 @@ public class DijkstraSimpleTest {
          * If s & t are one apart               neutralGraph, s = sNeutral, t = tClose
          * - [ ] calculate                      targetClose_calculate_returnsTrue()                 -> true
          * - [ ] distance                       targetClose_distance_returnsCorrect()               -> targetCloseDistance
-         * - [ ] retrievePath                   targetClose_retrievePath_returnsCorrect()           -> 
+         * - [ ] retrievePath                   targetClose_retrievePath_returnsCorrect()           -> targetClosePath
          * - [ ] relaxedEdge                    targetClose_relaxedEdge_returnsCorrect()            -> normalRelaxedEdges
          *
-         * If s & t are far apart
-         * - [ ] calculate (return true)
-         * - [ ] distance (return distance)
-         * - [ ] retrievePath (return correct path)
-         * - [ ] relaxedEdge (return correct value)
+         * If s & t are far apart               longGraph, s = sNeutral, t = tNeutral
+         * - [ ] calculate                      sourcesFar_calculate_returnsTrue()                  -> true
+         * - [ ] distance                       sourcesFar_distance_returnsCorrect()                -> longDistance
+         * - [ ] retrievePath                   sourcesFar_retrievePath_returnsCorrect()            -> longPath
+         * - [ ] relaxedEdge                    sourcesFar_relaxedEdge_returnsCorrect()             -> longRelaxedEdges
          *
-         * If contains 0 weight edges in path
-         * - [ ] calculate (return true)
-         * - [ ] distance (return distance)
-         * - [ ] retrievePath (return correct path)
-         * - [ ] relaxedEdge (return correct value)
+         * If contains 0 weight edges in path   zeroWeightGraph, s = sNeutral, t = tNeutral
+         * - [ ] calculate                      containsZeroWeight_calculate_returnsTrue()          -> true
+         * - [ ] distance                       containsZeroWeight_distance_returnsCorrect()        -> zeroWeightDistance
+         * - [ ] retrievePath                   containsZeroWeight_retrievePath_returnsCorrect()    -> zeroWeightPath
+         * - [ ] relaxedEdge                    containsZeroWeight_relaxedEdges_returnsCorrect()    -> zeroRelaxedEdges
          *
-         * If have multiple paths but only one shortest
-         * - [ ] calculate (return true)
-         * - [ ] distance (return distance)
-         * - [ ] retrievePath (return correct path)
-         * - [ ] relaxedEdge (return correct value)
-         *
-         * If multiple shortest paths
-         * - [ ] calculate (return true)
-         * - [ ] distance (return distance)
-         * - [ ] retrievePath (return either of the correct paths)
-         * - [ ] relaxedEdge (return correct value)
+         * If multiple shortest paths           multiplePathGraph, s = sNeutral, t = tNeutral
+         * - [ ] calculate                      multiplePaths_calculate_returnsTrue()               -> true
+         * - [ ] distance                       multiplePaths_distance_returnsCorrect()             -> multiplePathDistance
+         * - [ ] retrievePath                   multiplePaths_retrievePath_returnsCorrect()         -> mPathOne || mPathTwo
+         * - [ ] relaxedEdge                    multiplePaths_relaxedEdges_returnsCorrect()         -> multiplePathRelaxedEdges
          * 
          *
          */
-
-    @Test
-    void constructorTest() {
-        /* Potential test cases:
-         * initialized with graph = null
-         * Graph.V() is less that 1;
-         * Graph is in an otherwise illegal state
-         * Graph is proper
-         *
-         * other methods report expected values
-         * - retrievePath -> null
-         * - relaxedEdges -> -1
-         * - distance     -> MAX_VALUE
-         *
-         */
-
-    }
-
-    @Test
-    void calculate() {
-        DijkstraSimple ds = new DijkstraSimple(null);
-
-    }
-
-    @Test
-    void distance() {
-
-    }
-
-    @Test
-    void retrievePath() {
-
-    }
-
-    @Test
-    void relaxedEdges() {
-        /* If not computed, return -1
-         * If not found, return correct
-         * If found, return correct
-         */
-
-    }
-
-    @Test
-    // usecases
-
-}
