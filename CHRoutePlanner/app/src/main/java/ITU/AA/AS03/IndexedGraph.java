@@ -40,6 +40,8 @@ public class IndexedGraph {
             idTranslator.put(id, i);
             locs[i][0] = sc.nextFloat();
             locs[i][1] = sc.nextFloat();
+            //Initialize the adjacency-list here***
+            edges[i] = new LinkedList<>();
         }
 
         for (int i = 0; i < E; i++) {
