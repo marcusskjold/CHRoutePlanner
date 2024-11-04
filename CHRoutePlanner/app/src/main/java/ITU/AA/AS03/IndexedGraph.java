@@ -11,15 +11,32 @@ import java.util.Scanner;
 public class IndexedGraph {
     private Map<Long, Integer> idTranslator;
     private int V; // Number of nodes
+    private int maxSize;
     private int E;
     private long[] ids;
     private float[][] locs;
     private List<DirectedEdge>[] edges;
 
+    public IndexedGraph(int maxSize) {
+        this.maxSize = maxSize;
+        V = maxSize;
+        E = 0;
+        ids = new long[maxSize];
+        locs = new float[maxSize][2];
+        edges = (LinkedList<DirectedEdge>[]) new LinkedList[maxSize];
+        idTranslator = new HashMap<Long, Integer>(maxSize * 2, (float) 0.5);
+        for (int i = 0; i < V; i++) {
+            edges[i] = new LinkedList<>();
+        }
+    }
+
+    /** Generate undirected graph from input stream
+     */
     public IndexedGraph(InputStream input) throws IOException {
         if (input == null) throw new IllegalArgumentException("Input is null");
         Scanner sc = new Scanner(input);
         V = sc.nextInt();
+        maxSize = V;
         if (V < 1) {
             sc.close();
             throw new IllegalArgumentException("No nodes given");
@@ -40,7 +57,6 @@ public class IndexedGraph {
             idTranslator.put(id, i);
             locs[i][0] = sc.nextFloat();
             locs[i][1] = sc.nextFloat();
-            //Initialize the adjacency-list here***
             edges[i] = new LinkedList<>();
         }
 
@@ -55,23 +71,20 @@ public class IndexedGraph {
         sc.close();
     }
 
-    public List<DirectedEdge> getEdges(int index) {
-        return edges[index];
+    // TODO: Add edge method and add node method.
+    public void addEdge(DirectedEdge e) {
+        edges[e.from()].add(e);
     }
 
-    public float[] getLocation(int index) {
-        return locs[index];
-    }
+    // ============== Getters ==================
 
-    public long getID(int index) {
-        return ids[index];
-    }
+    public List<DirectedEdge> getEdges(int index) { return edges[index]; }
 
-    public int V() {
-        return V;
-    }
+    public float[] getLocation(int index) { return locs[index]; }
 
-    public int E() {
-        return E;
-    }
+    public long getID(int index) { return ids[index]; }
+
+    public int V() { return V; }
+
+    public int E() { return E; }
 }

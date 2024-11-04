@@ -37,6 +37,7 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
      * if multiple queries are desired, either create an instance per query,
      * or sequentially reset the query object with reset();
      * @param  G the edge-weighted digraph
+     * @throws if graph is null or has no nodes.
      */
     public DijkstraSimple(IndexedGraph graph) {
         if (graph == null)
@@ -46,6 +47,7 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
             throw new IllegalArgumentException("Graph must contain nodes.");
         this.G = graph;
         pq = new IndexMinPQ<Integer>(V);
+
         edgeTo = new DirectedEdge[V];        // edgeTo[v] = last edge on shortest s->v path 
         distTo = new int[V];         // distTo[v] = distance  of shortest s->v path
         for (int v = 0; v < V; v++) { distTo[v] = Integer.MAX_VALUE; }
