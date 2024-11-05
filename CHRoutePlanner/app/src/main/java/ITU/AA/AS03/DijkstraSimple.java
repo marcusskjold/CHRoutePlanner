@@ -64,6 +64,8 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
      * @param source the index of the source node,
      * @param target the target node.
      * @return if a shortest path was found
+     * @throws Error if calculate is called multiple times.
+     * @throws IllegalArgumentException if source or target is invalid indexes in the graph
      */
     @Override public boolean calculate (int source, int target) {
         if (!ready) 
@@ -125,10 +127,13 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
      * These must have been calculated beforehand.
      * Does not mutate state.
      * @return the shortest distance between source and target.
-     *         if there is no path, or if the path has not been calculated yet
-     *         returns {@code Integer.MAX_VALUE}.
+     *         if there is no path returns {@code Integer.MAX_VALUE}.
+     *         if the path has not been calculated yet, returns {@code -1}.
      */
-    @Override public int distance() { return distTo[t]; }
+    @Override public int distance() {
+        if (t == -1) return -1;
+        return distTo[t];
+    }
 
     /** Returns a shortest path from the source vertex {@code s} to vertex {@code v}.
      * @return a shortest path from the source vertex {@code s} to vertex {@code v}
