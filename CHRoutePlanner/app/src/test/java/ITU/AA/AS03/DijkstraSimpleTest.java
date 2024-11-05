@@ -3,12 +3,13 @@ package ITU.AA.AS03;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedList;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -23,10 +24,15 @@ public class DijkstraSimpleTest {
     DijkstraSimple ds;
 
     IndexedGraph smallGraph;
+    IndexedGraph tooFarApartGraph;
     int sNormal = 0;
     int tNormal = 3;
     int tooHigh = 100;
     int tooLow = -100;
+    int tClose = 1;
+    int smallGraphRelaxedEdges = 4;
+    LinkedList<DirectedEdge> multiplePathOne;
+    LinkedList<DirectedEdge> multiplePathTwo;
 
     // Errors
     IndexedGraph noNodeGraph;
@@ -37,8 +43,8 @@ public class DijkstraSimpleTest {
     TestData targetIllegal;
 
     // Validation
-    TestData sourcesEqual;
-    TestData sourcesClose;
+    TestData nodesEqual;
+    TestData targetClose;
     TestData sourcesFar;
     TestData multiplePaths;
     TestData containsZeroWeights;
@@ -63,8 +69,11 @@ public class DijkstraSimpleTest {
         smallGraph.addEdge(new DirectedEdge(1, 2, 10));
         smallGraph.addEdge(new DirectedEdge(1, 3, 30));
         smallGraph.addEdge(new DirectedEdge(2, 3, 10));
-        int smallGraphRelaxedEdges = 4;
 
+        tooFarApartGraph = new IndexedGraph(4);
+        tooFarApartGraph.addEdge(new DirectedEdge(0, 1, 1000000000));
+        tooFarApartGraph.addEdge(new DirectedEdge(1, 2, 1000000000));
+        tooFarApartGraph.addEdge(new DirectedEdge(2, 3, 1000000000));
         // TestData
 
         // No calculation
@@ -86,6 +95,49 @@ public class DijkstraSimpleTest {
         disconnectedNodes = new TestData();
         disconnectedNodes.graph = disconnectedGraph;
         disconnectedNodes.relaxedEdges = 2;
+
+        // ===========================
+        // Validation
+
+        // Target is adjacent to source
+        targetClose = new TestData();
+        targetClose.path = new LinkedList<>();
+        targetClose.path.add(new DirectedEdge(0, 1, 10));
+        targetClose.distance = 10;
+
+        // Shortest path includes edge with zero weight
+        IndexedGraph zeroWeightGraph = new IndexedGraph(4);
+        zeroWeightGraph.addEdge(new DirectedEdge(0, 1, 10));
+        zeroWeightGraph.addEdge(new DirectedEdge(0, 2, 0));
+        zeroWeightGraph.addEdge(new DirectedEdge(1, 2, 10));
+        zeroWeightGraph.addEdge(new DirectedEdge(1, 3, 30));
+        zeroWeightGraph.addEdge(new DirectedEdge(2, 3, 10));
+        containsZeroWeights = new TestData();
+        containsZeroWeights.graph = zeroWeightGraph;
+        LinkedList<DirectedEdge> zeroWeightPath = new LinkedList<>();
+        zeroWeightPath.add(new DirectedEdge(0, 2, 0));
+        zeroWeightPath.add(new DirectedEdge(2, 3, 10));
+        containsZeroWeights.path = zeroWeightPath;
+        containsZeroWeights.distance = 10;
+        containsZeroWeights.relaxedEdges = 3;
+
+        // Multiple shortest paths
+        IndexedGraph multiplePathGraph = new IndexedGraph(4);
+        multiplePathGraph.addEdge(new DirectedEdge(0, 1, 10));
+        multiplePathGraph.addEdge(new DirectedEdge(0, 2, 10));
+        multiplePathGraph.addEdge(new DirectedEdge(1, 2, 10));
+        multiplePathGraph.addEdge(new DirectedEdge(1, 3, 10));
+        multiplePathGraph.addEdge(new DirectedEdge(2, 3, 10));
+        multiplePathOne = new LinkedList<DirectedEdge>();
+        multiplePathOne.add(new DirectedEdge(0, 1, 10));
+        multiplePathOne.add(new DirectedEdge(1, 3, 10));
+        multiplePathTwo = new LinkedList<DirectedEdge>();
+        multiplePathTwo.add(new DirectedEdge(0, 2, 10));
+        multiplePathTwo.add(new DirectedEdge(2, 3, 10));
+        multiplePaths = new TestData();
+        multiplePaths.graph = multiplePathGraph;
+        multiplePaths.relaxedEdges = 3;
+        multiplePaths.distance = 20;
 
 
     }
@@ -120,33 +172,41 @@ public class DijkstraSimpleTest {
     @Test void calculateTwice_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
         ds.calculate(sNormal, tNormal);
-        assertThrows(Error.class, () -> 
+        assertThrows(IllegalStateException.class, () ->
             ds.calculate(sNormal, tNormal));
     }
 
     //     |||| Case: calculate with bad arguments ||||
     @Test void sourceTooHigh_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
-        assertThrows(IllegalArgumentException.class, () -> 
+        assertThrows(IllegalArgumentException.class, () ->
             ds.calculate(tooHigh, tNormal));
     }
 
     @Test void sourceTooLow_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
-        assertThrows(IllegalArgumentException.class, () -> 
+        assertThrows(IllegalArgumentException.class, () ->
             ds.calculate(tooLow, tNormal));
     }
 
     @Test void targetTooHigh_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
-        assertThrows(IllegalArgumentException.class, () -> 
+        assertThrows(IllegalArgumentException.class, () ->
             ds.calculate(sNormal, tooHigh));
     }
 
     @Test void targetTooLow_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
-        assertThrows(IllegalArgumentException.class, () -> 
+        assertThrows(IllegalArgumentException.class, () ->
             ds.calculate(sNormal, tooLow));
+    }
+
+    // |||| Case: source and target are too far apart
+
+    @Test void nodesTooFarApart_calculate_throws() {
+        ds = new DijkstraSimple(tooFarApartGraph);
+        assertThrows(ArithmeticException.class, () ->
+            ds.calculate(sNormal, tNormal));
     }
 
     // ================== EDGE CASES ===========================
@@ -195,7 +255,7 @@ public class DijkstraSimpleTest {
         ds.calculate(sNormal, tNormal);
         assertEquals(0, ds.relaxedEdges());
     }
-    
+
     // |||| Case: Graph is not connected and source is disconnected from target ||||
     //            Uses disconnectedNodes
     @Test void nodesDisconnected_calculate_returnFalse() {
@@ -221,109 +281,115 @@ public class DijkstraSimpleTest {
         assertEquals(disconnectedNodes.relaxedEdges, ds.relaxedEdges());
     }
 
+    // ================== VALIDATION ===========================
+
+    // |||| Case: Source and target are the same ||||
+    //            Uses nodesEqual
+
+    @Test void nodesEqual_calculate_returnsTrue() {
+        ds = new DijkstraSimple(smallGraph);
+        assertTrue(ds.calculate(sNormal, sNormal));
+    }
+
+    @Test void nodesEqual_distance_returnsZero() {
+        ds = new DijkstraSimple(smallGraph);
+        ds.calculate(sNormal, sNormal);
+        assertEquals(0, ds.distance());
+    }
+
+    @Test void nodesEqual_retrievePath_returnsEmptyList() {
+        ds = new DijkstraSimple(smallGraph);
+        ds.calculate(sNormal, sNormal);
+        assertEquals(new LinkedList<DirectedEdge>(), ds.retrievePath());
+    }
+
+    @Test void nodesEqual_relaxedEdges_returnsCorrect() {
+        ds = new DijkstraSimple(smallGraph);
+        ds.calculate(sNormal, sNormal);
+        assertEquals(smallGraphRelaxedEdges, ds.relaxedEdges());
+
+    }
+
+    // |||| Case: source and target are adjacent ||||
+
+    @Test void targetClose_calculate_returnsTrue() {
+        ds = new DijkstraSimple(smallGraph);
+        assertTrue(ds.calculate(sNormal, tClose));
+    }
+
+    @Test void targetClose_distance_returnsCorrect() {
+        ds = new DijkstraSimple(smallGraph);
+        ds.calculate(sNormal, tClose);
+        assertEquals(targetClose.distance, ds.distance());
+    }
+
+    @Test void targetClose_retrievePath_returnsCorrect() {
+        ds = new DijkstraSimple(smallGraph);
+        ds.calculate(sNormal, tClose);
+        assertEquals(targetClose.path, ds.retrievePath());
+    }
+
+    @Test void targetClose_relaxedEdge_returnsCorrect() {
+        ds = new DijkstraSimple(smallGraph);
+        ds.calculate(sNormal, tClose);
+        assertEquals(smallGraphRelaxedEdges, ds.relaxedEdges());
+    }
+
+    // |||| Case: Shortest path contains edges with 0 weight |||| 
+
+    @Test void containsZeroWeight_calculate_returnsTrue() {
+        ds = new DijkstraSimple(containsZeroWeights.graph);
+        assertTrue(ds.calculate(sNormal, tNormal));
+
+    }
+
+    @Test void containsZeroWeight_distance_returnsCorrect() {
+        ds = new DijkstraSimple(containsZeroWeights.graph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(containsZeroWeights.distance, ds.distance());
+    }
+
+    @Test void containsZeroWeight_retrievePath_returnsCorrect() {
+        ds = new DijkstraSimple(containsZeroWeights.graph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(containsZeroWeights.path, ds.retrievePath());
+    }
+
+    @Test void containsZeroWeight_relaxedEdges_returnsCorrect() {
+        ds = new DijkstraSimple(containsZeroWeights.graph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(containsZeroWeights.relaxedEdges, ds.relaxedEdges());
+    }
+
+    // |||| Case: There are multiple shortest paths ||||
+
+    @Test void multiplePaths_calculate_returnsTrue() {
+        ds = new DijkstraSimple(multiplePaths.graph);
+        assertTrue(ds.calculate(sNormal, tNormal));
+    }
+
+    @Test void multiplePaths_distance_returnsCorrect() {
+        ds = new DijkstraSimple(multiplePaths.graph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(multiplePaths.distance, ds.distance());
+    }
+
+    @Test void multiplePaths_retrievePath_returnsEitherCorrect() {
+        ds = new DijkstraSimple(multiplePaths.graph);
+        ds.calculate(sNormal, tNormal);
+        
+        boolean isEither = (
+            ds.retrievePath().equals(multiplePathOne) ||
+            ds.retrievePath().equals(multiplePathTwo)
+        );
+
+        assertTrue(isEither);
+        
+    }
+
+    @Test void multiplePaths_relaxedEdges_returnsCorrect() {
+        ds = new DijkstraSimple(multiplePaths.graph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(multiplePaths.relaxedEdges, ds.relaxedEdges());
+    }
 }
-        /* # List of test cases.
-         *
-         * ## Data input
-         *
-         * Input nodes:
-         *
-         * int sNeutral = 0
-         * int tNeutral = 3
-         * int tooHigh = 9
-         * int tooLow = -1
-         * int tClose = 1
-         *
-         * Return values:
-         *
-         * int componentRelaxedEdges = 2
-         * int normalRelaxedEdges = 5
-         * int targetCloseDistance = 10
-         * int longDistance =
-         * int longRelaxedEdges =
-         *
-         * Paths:
-         * targetClosePath =
-         * longPath
-         *
-         * Graphs:
-         *
-         * Graph noNodeGraph ()
-         * Graph noEdgeGraph (4, 0)
-         * Graph nodesDisconnectedGraph (4 1, 0 1 10, 1 2 10)
-         * Graph neutralGraph (4 5, 0 1 10, 0 2 20, 1 2 5, 1 3 30, 2 3 10)
-         * Graph longGraph
-         *
-         *
-         *
-         * ## Test for wrong uses
-         *
-         * If graph illegal (negative weights)
-         * - [x] No test, graph is responsible
-         *
-         * If graph illegal (no nodes)
-         * - [x] Constructor should catch this  graphContainsNoNodes_constructor_throws(noNodeGraph)
-         *
-         * If graph is null
-         * - [x] Constructor should catch this  null_constructor_throws(null)
-         *
-         * Query, but not calculated
-         * - [x] distance                       noCalculation_distance_returnsMAX()                 ->  MAX_VALUE
-         * - [x] retrievePath                   noCalculation_retrievePath_returnsNull()            ->  null
-         * - [x] relaxedEdges                   noCalcultion_relaxedEdges_returnMinusOne()          ->  -1
-         *
-         * Calculate twice
-         * - [x] calculate                      calculateTwice_calculate_returnsFalse()
-         *
-         * If graph contains no edges           noEdgeGraph sNeutral tNeutral
-         * - [x] calculate                      graphContainsNoEdges_calculate_returnsFalse()       -> false
-         * - [x] distance                       graphContainsNoEdges_distance_returnsMAX()          -> MAX_VALUE
-         * - [x] retrievePath                   graphContainsNoEdges_retrievePath_returnsNull()     -> null
-         * - [x] relaxedEdges                   graphContainsNoEdges_relaxedEdges_returnsZero()     -> 0
-         *
-         * If s & t not connected               nodesDisconnectedGraph sNeutral tNeutral
-         * - [x] calculate                      nodesDisconnected_calculate_returnFalse()           -> false
-         * - [x] distance                       nodesDisconnected_distance_returnMAX()              -> MAX_VALUE
-         * - [x] retrievePath                   nodesDisconnected_retrievePath_returnNull()         -> null
-         * - [x] relaxedEdges                   nodesDisconnected_relaxedEdges_returnCorrect()      -> componentRelaxedEdges
-         *
-         * If s or t is illegal.                neutralGraph
-         * - [x] calculate should catch this    sourceNotInGraph_calculate_throws(tooHigh, tNeutral)
-         *                                      sourceNotInGraph_calculate_throws(tooLow, tNeutral)
-         *                                      targetNotInGraph_calculate_throws(sNeutral, tooHigh)
-         *                                      targetNotInGraph_calculate_throws(sNeutral, tooLow)
-         *
-         * ## Verification
-         *
-         * If s & t is equal                    neutralGraph, s = sNeutral, t = sNeutral
-         * - [ ] calculate                      sourceEqual_calculate_returnsTrue()                 -> true
-         * - [ ] distance                       sourceEqual_distrance_returnsZero()                 -> 0
-         * - [ ] retrievePath                   sourceEqual_retrievePath_returnsNull()              -> null
-         * - [ ] relaxedEdge                    sourceEqual_relaxedEdge_returnsCorrect()            -> normalRelaxedEdges
-         *
-         * If s & t are one apart               neutralGraph, s = sNeutral, t = tClose
-         * - [ ] calculate                      targetClose_calculate_returnsTrue()                 -> true
-         * - [ ] distance                       targetClose_distance_returnsCorrect()               -> targetCloseDistance
-         * - [ ] retrievePath                   targetClose_retrievePath_returnsCorrect()           -> targetClosePath
-         * - [ ] relaxedEdge                    targetClose_relaxedEdge_returnsCorrect()            -> normalRelaxedEdges
-         *
-         * If s & t are far apart               longGraph, s = sNeutral, t = tNeutral
-         * - [ ] calculate                      sourcesFar_calculate_returnsTrue()                  -> true
-         * - [ ] distance                       sourcesFar_distance_returnsCorrect()                -> longDistance
-         * - [ ] retrievePath                   sourcesFar_retrievePath_returnsCorrect()            -> longPath
-         * - [ ] relaxedEdge                    sourcesFar_relaxedEdge_returnsCorrect()             -> longRelaxedEdges
-         *
-         * If contains 0 weight edges in path   zeroWeightGraph, s = sNeutral, t = tNeutral
-         * - [ ] calculate                      containsZeroWeight_calculate_returnsTrue()          -> true
-         * - [ ] distance                       containsZeroWeight_distance_returnsCorrect()        -> zeroWeightDistance
-         * - [ ] retrievePath                   containsZeroWeight_retrievePath_returnsCorrect()    -> zeroWeightPath
-         * - [ ] relaxedEdge                    containsZeroWeight_relaxedEdges_returnsCorrect()    -> zeroRelaxedEdges
-         *
-         * If multiple shortest paths           multiplePathGraph, s = sNeutral, t = tNeutral
-         * - [ ] calculate                      multiplePaths_calculate_returnsTrue()               -> true
-         * - [ ] distance                       multiplePaths_distance_returnsCorrect()             -> multiplePathDistance
-         * - [ ] retrievePath                   multiplePaths_retrievePath_returnsCorrect()         -> mPathOne || mPathTwo
-         * - [ ] relaxedEdge                    multiplePaths_relaxedEdges_returnsCorrect()         -> multiplePathRelaxedEdges
-         *
-         *
-         */
