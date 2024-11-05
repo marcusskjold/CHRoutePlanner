@@ -4,28 +4,22 @@ import java.util.Stack;
 
 public class DijkstraBidirectional implements ShortestPathAlgorithm{
 
-    //from simple-Dijkstra
     protected IndexedGraph G;
-    //protected int t;
-    //private int s;
     private int V;
     private boolean ready;
-    ////If using two Dijkstras
-    private DijkstraEarlyStop dijkstraL;
-    private DijkstraEarlyStop dijkstraR;
+    private DijkstraSimple dijkstraL; //Maintaining two dijkstra (simple rather than earlystop since bidijkstra guarantees early stop (target already settled by othe dijkstra))
+    private DijkstraSimple dijkstraR;
     private int d; //shortest path distance
     protected boolean[] settled; //Array to keep track of visited nodes (by either end)
     private int meetPoint; //Point where the shortest paths meet (for path retreival)
     
 
-
-
     public DijkstraBidirectional(IndexedGraph graph) {
         ready = true; //design choice whether this should also have ready and how***
         G= graph;
         ////If using two dijkstras
-        dijkstraL = new DijkstraEarlyStop(graph);
-        dijkstraR = new DijkstraEarlyStop(graph);
+        dijkstraL = new DijkstraSimple(graph);
+        dijkstraR = new DijkstraSimple(graph);
         V = graph.V();
         //New stuff:
         settled = new boolean[V]; //Initialize array to check whether already visited
@@ -46,9 +40,9 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
         ready = false;
         //shortest distance to be returned (should maybe be a field?)***
         d = Integer.MAX_VALUE;
+        //sets up dijkstras from either end
         dijkstraL.setUpSearch(source, target);
-        dijkstraR.setUpSearch(source, target);
-        
+        dijkstraR.setUpSearch(target, source);
         
         findShortestPath();
 
@@ -60,8 +54,6 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
 
     
     protected void findShortestPath() {
-        //new
-        
         //fetches priority-queues to compare
         IndexMinPQ<Integer> pqL = dijkstraL.getPq();
         IndexMinPQ<Integer> pqR = dijkstraR.getPq();
@@ -92,21 +84,26 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
                     //Checks whether the distance to the vertex newly relaxed (or tried to relax) edge pointed to is shorter than current shortest path
                     //If so updates shortest path
                     int v = e.to();
-                    int distCandidate = dijkstraL.distance(v) + dijkstraR.distance(v);
-                    if(d > distCandidate) {
-                        d = distCandidate;
-                        //And update place where new shortest path meet
-                        meetPoint = v;
+                    //get current shortest distances from dijkstras to v
+                    int distL = dijkstraL.distance(v);
+                    int distR = dijkstraR.distance(v);
+                    //First check that they have each been reached (otherwise overflow***)
+                    if(distL < Integer.MAX_VALUE && distR < Integer.MAX_VALUE) {
+                        int distCandidate = distL + distR;
+                        if(distCandidate < d) {
+                            d = distCandidate;
+                            //And update place where new shortest path meet
+                            meetPoint = v;
+                        }
                     }
                 }
-            
         }
     }
 
     //The same except it also takes a priorityQueue
     //Might want to change it to this way in superclass (if we want this one to inherit)***
     //and then always use same priorityqueue there
-    protected void relax(DirectedEdge e, DijkstraEarlyStop d) {
+    protected void relax(DirectedEdge e, DijkstraSimple d) {
         d.relax(e);
     }
 
