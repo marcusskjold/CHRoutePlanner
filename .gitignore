@@ -2,6 +2,9 @@
 
 CHRoutePlanner/data/*
 
+# Settings 
+CHRoutePlanner/.settings/org.eclipse.buildship.core.prefs
+
 # Compiled class file
 *.class
 
