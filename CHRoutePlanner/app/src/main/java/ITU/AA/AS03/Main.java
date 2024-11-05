@@ -39,6 +39,10 @@ public class Main {
     //Compute shortest distance for a 1000 randomly generated pairs (maybe refactor pair generation***)
     private static void computePairs(AlgorithmType type, IndexedGraph graph, int pairNums, long seed) {
         Random r = new Random(seed);
+        long startTime;
+        long endTime;
+        long totalTime = 0;
+        long totalEdgeRelax = 0;
         for(int i=0; i<pairNums; i++) {
             ShortestPathAlgorithm sp = createAlgorithm(type, graph); //Can throw exception
             System.out.println("generating pair no " + (i + 1));
@@ -46,15 +50,24 @@ public class Main {
             int[] pair = new int[]{r.nextInt(range), r.nextInt(range)};
             int source = pair[0];
             int target = pair[1];
-            System.out.println("source: " + source);
-            System.out.println("target: " + target);
-            System.out.println("starting calculation");
+            //System.out.println("source: " + source);
+            //System.out.println("target: " + target);
+            System.out.println("starting calculation no: " + i);
+            startTime = System.currentTimeMillis();
             sp.calculate(source, target);
             int d = sp.distance();
-            //debug print-statement:
-            System.out.println(d);
-            System.out.println("relaxed edges: " + sp.relaxedEdges());
+            endTime = System.currentTimeMillis();
+            totalTime += (endTime - startTime);
+            ////debug print-statement:
+            //System.out.println(d);
+            //System.out.println("relaxed edges: " + sp.relaxedEdges());
+
+            totalEdgeRelax += sp.relaxedEdges();
         }
+        double timeMean = (double) totalTime / pairNums;
+        double edgeRelaxMean = (double) totalEdgeRelax / pairNums;
+        System.out.println("mean duration (nanoseconds): " + timeMean);
+        System.out.println("mean relaxed edges: " + edgeRelaxMean);
     }
 
 
@@ -68,7 +81,7 @@ public class Main {
             InputStream input = new FileInputStream("denmark.graph.txt");
             IndexedGraph graph = new IndexedGraph(input);
             System.out.println("finished generating graph");
-            computePairs(AlgorithmType.BIDIJKSTRA, graph, 10, DEFAULT_SEED);
+            computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 10, DEFAULT_SEED);
             //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 10, DEFAULT_SEED);
         } catch (IOException e) {
             e.printStackTrace();
