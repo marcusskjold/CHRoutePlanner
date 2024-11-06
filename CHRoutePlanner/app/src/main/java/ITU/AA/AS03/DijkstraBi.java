@@ -87,8 +87,8 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         edgeRelaxationCount = 0;
         s = source; t = target;
 
-        l.distTo[s] = 0; l.pq.insert(source, 0);
-        r.distTo[t] = 0; r.pq.insert(target, 0);
+        r.distTo[s] = 0; r.pq.insert(source, 0);
+        l.distTo[t] = 0; l.pq.insert(target, 0);
 
         findShortestPath();
 
@@ -125,10 +125,10 @@ public class DijkstraBi implements ShortestPathAlgorithm {
 
         LinkedList<DirectedEdge> path = new LinkedList<DirectedEdge>();
         for (
-            DirectedEdge e = l.edgeTo[meetPoint]; e != null; e = l.edgeTo[e.from()]
+            DirectedEdge e = r.edgeTo[meetPoint]; e != null; e = r.edgeTo[e.from()]
         ) { path.addFirst(e); }
         for (
-            DirectedEdge e = r.edgeTo[meetPoint]; e != null; e = r.edgeTo[e.from()]
+            DirectedEdge e = l.edgeTo[meetPoint]; e != null; e = l.edgeTo[e.from()]
         ) { path.add(e); }
 
         return path;
@@ -137,6 +137,10 @@ public class DijkstraBi implements ShortestPathAlgorithm {
     // =================== Private helper methods ========================
 
     private void findShortestPath() {
+        if (s == t) { 
+            d = 0;
+            return;
+        }
 
         while (true) {
             boolean eR = (r.pq.isEmpty());
