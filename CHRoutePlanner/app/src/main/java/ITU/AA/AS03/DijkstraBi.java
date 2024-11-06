@@ -148,10 +148,8 @@ public class DijkstraBi implements ShortestPathAlgorithm {
             if (eR && eL) return;
             
             // Determine side
-            if      (eR)                              c = l;
-            else if (eL)                              c = r;
-            else if ((l.pq.minKey() < r.pq.minKey())) c = l;
-            else                                      c = r;
+            if (eR || (!eL && (l.pq.minKey() < r.pq.minKey()))) c = l;
+            else                                                c = r;
 
             int u = c.pq.delMin();
 
@@ -166,7 +164,7 @@ public class DijkstraBi implements ShortestPathAlgorithm {
                 int distR = r.distTo[v];
 
                 // First check that they have each been reached (otherwise overflow***)
-                if(distL < Integer.MAX_VALUE && distR < Integer.MAX_VALUE) {
+                if(distL < Integer.MAX_VALUE && distR < Integer.MAX_VALUE) { // TODO: Consider adding reached array to avoid this check
                     int distCandidate = distL + distR;
                     if (distCandidate < distL)
                         throw new ArithmeticException("Integer overflow: Distances are too high");

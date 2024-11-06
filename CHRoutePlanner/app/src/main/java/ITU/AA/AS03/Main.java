@@ -30,7 +30,7 @@ public class Main {
             case EARLYSTOPDIJKSTRA:
                 return new DijkstraEarlyStop(graph);
             case BIDIJKSTRA:
-                return new DijkstraBidirectional(graph);
+                return new DijkstraBi(graph);
             default:
                 throw ILLEGALALGORITHM;
         }
