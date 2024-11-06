@@ -18,18 +18,24 @@ public class DijkstraBi implements ShortestPathAlgorithm {
     private boolean[] settled;
     private int meetPoint;              // For path retrieval
 
-    private IndexMinPQ<Integer> pq;
-    private int[] distTo;
-    private DirectedEdge[] edgeTo;
-    private boolean rightSide;
+    private Dijkstra c;
+    private Dijkstra r;
+    private Dijkstra l;
 
-    private IndexMinPQ<Integer> pqR;
-    private int[] distToR;
-    private DirectedEdge[] edgeToR;
+    
+    private class Dijkstra {
+        IndexMinPQ<Integer> pq;
+        int[] distTo;
+        DirectedEdge[] edgeTo;
 
-    private IndexMinPQ<Integer> pqL;
-    private int[] distToL;
-    private DirectedEdge[] edgeToL;
+        Dijkstra(int V) {
+            pq = new IndexMinPQ<Integer>(V);
+            edgeTo = new DirectedEdge[V];
+            distTo = new int[V];
+            for (int v = 0; v < V; v++)
+                distTo[v] = Integer.MAX_VALUE;
+        }
+    }
 
     /** Initializes the algorithm for a given graph.
      * Does not compute shortest paths.
@@ -47,19 +53,9 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         if (V < 1)
             throw new IllegalArgumentException("Graph must contain nodes.");
         G = graph;
-
-        pqR = new IndexMinPQ<Integer>(V);
-        edgeToR = new DirectedEdge[V];
-        distToR = new int[V];
-
-        pqL = new IndexMinPQ<Integer>(V);
-        edgeToL = new DirectedEdge[V];
-        distToL = new int[V];
-
-        for (int v = 0; v < V; v++) {
-            distToR[v] = Integer.MAX_VALUE;
-            distToL[v] = Integer.MAX_VALUE;
-        }
+        
+        l = new Dijkstra(V);
+        r = new Dijkstra(V);
 
         s = -1;
         t = -1;
@@ -91,10 +87,8 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         edgeRelaxationCount = 0;
         s = source; t = target;
 
-        distToR[s] = 0;
-        pqR.insert(source, 0);
-        distToL[t] = 0;
-        pqL.insert(target, 0);
+        l.distTo[s] = 0; l.pq.insert(source, 0);
+        r.distTo[t] = 0; r.pq.insert(target, 0);
 
         findShortestPath();
 
@@ -130,12 +124,13 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         if (d == Integer.MAX_VALUE) return null;                // If not connected
 
         LinkedList<DirectedEdge> path = new LinkedList<DirectedEdge>();
-        for (DirectedEdge e = edgeToR[meetPoint]; e != null; e = edgeToR[e.from()]) {
-            path.addFirst(e);
-        }
-        for (DirectedEdge e = edgeToR[meetPoint]; e != null; e = edgeToR[e.from()]) {
-            path.add(e);
-        }
+        for (
+            DirectedEdge e = l.edgeTo[meetPoint]; e != null; e = l.edgeTo[e.from()]
+        ) { path.addFirst(e); }
+        for (
+            DirectedEdge e = r.edgeTo[meetPoint]; e != null; e = r.edgeTo[e.from()]
+        ) { path.add(e); }
+
         return path;
     }
 
@@ -144,18 +139,17 @@ public class DijkstraBi implements ShortestPathAlgorithm {
     private void findShortestPath() {
 
         while (true) {
-            boolean eR = (pqR.isEmpty());
-            boolean eL = (pqL.isEmpty());
+            boolean eR = (r.pq.isEmpty());
+            boolean eL = (l.pq.isEmpty());
             if (eR && eL) return;
             
             // Determine side
-            if      (eR)                            rightSide = false;
-            if      (eL)                            rightSide = true;
-            else if ((pqL.minKey() < pqR.minKey())) rightSide = false;
-            else                                    rightSide = true;
+            if      (eR)                              c = l;
+            else if (eL)                              c = r;
+            else if ((l.pq.minKey() < r.pq.minKey())) c = l;
+            else                                      c = r;
 
-            updateSide();
-            int u = pq.delMin();
+            int u = c.pq.delMin();
 
             if (settled[u]) return;
 
@@ -164,8 +158,8 @@ public class DijkstraBi implements ShortestPathAlgorithm {
             for (DirectedEdge e : G.getEdges(u)) {
                 relax(e);
                 int v = e.to();
-                int distL = distToL[v];
-                int distR = distToR[v];
+                int distL = l.distTo[v];
+                int distR = r.distTo[v];
 
                 // First check that they have each been reached (otherwise overflow***)
                 if(distL < Integer.MAX_VALUE && distR < Integer.MAX_VALUE) {
@@ -181,29 +175,17 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         }
     }
 
-    private void updateSide() {
-        if (rightSide) {
-            pq = pqR;
-            distTo = distToR;
-            edgeTo = edgeToR;
-        } else {
-            pq = pqL;
-            distTo = distToL;
-            edgeTo = edgeToL;
-        }
-    }
-
     protected void relax(DirectedEdge e) {
         int v = e.from(), w = e.to();
-        int newDist = distTo[v] + e.weight();
-        if (newDist < distTo[v])
+        int newDist = c.distTo[v] + e.weight();
+        if (newDist < c.distTo[v])
             throw new ArithmeticException("Integer overflow: Distances are too high");
-        if (distTo[w] > newDist) {
+        if (c.distTo[w] > newDist) {
             edgeRelaxationCount++;
-            distTo[w] = newDist;
-            edgeTo[w] = e;
-            if (pq.contains(w)) pq.decreaseKey(w, newDist);
-            else                pq.insert(w, newDist);
+            c.distTo[w] = newDist;
+            c.edgeTo[w] = e;
+            if (c.pq.contains(w)) c.pq.decreaseKey(w, newDist);
+            else                  c.pq.insert(w, newDist);
         }
     }
 
