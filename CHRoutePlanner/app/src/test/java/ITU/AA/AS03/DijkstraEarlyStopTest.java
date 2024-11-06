@@ -19,18 +19,21 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
  * DijkstraSimpleTest
  */
 @TestInstance(Lifecycle.PER_CLASS)
-public class DijkstraSimpleTest {
+public class DijkstraEarlyStopTest {
 
     DijkstraSimple ds;
 
     IndexedGraph smallGraph;
+    IndexedGraph mediumGraph;
     IndexedGraph tooFarApartGraph;
     int sNormal = 0;
     int tNormal = 3;
     int tooHigh = 100;
     int tooLow = -100;
     int tClose = 1;
-    int smallGraphRelaxedEdges = 4;
+    int nodesEqualRelaxededges = 0;
+    int targetCloseRelaxedEdges = 2;
+    int mediumGraphRelaxedEdges = 4;
     LinkedList<DirectedEdge> multiplePathOne;
     LinkedList<DirectedEdge> multiplePathTwo;
 
@@ -69,6 +72,17 @@ public class DijkstraSimpleTest {
         smallGraph.addEdge(new DirectedEdge(1, 2, 10));
         smallGraph.addEdge(new DirectedEdge(1, 3, 30));
         smallGraph.addEdge(new DirectedEdge(2, 3, 10));
+        
+        mediumGraph = new IndexedGraph(5);
+        mediumGraph.addEdge(new DirectedEdge(0, 1, 10));
+        mediumGraph.addEdge(new DirectedEdge(0, 2, 20));
+        mediumGraph.addEdge(new DirectedEdge(1, 2, 10));
+        mediumGraph.addEdge(new DirectedEdge(1, 3, 30));
+        mediumGraph.addEdge(new DirectedEdge(2, 3, 10));
+        mediumGraph.addEdge(new DirectedEdge(3,4,50));
+
+
+
 
         tooFarApartGraph = new IndexedGraph(4);
         tooFarApartGraph.addEdge(new DirectedEdge(0, 1, 1000000000));
@@ -158,51 +172,51 @@ public class DijkstraSimpleTest {
 
     @Test void graphContainsNoNodes_constructor_throws() {
         Exception e = assertThrows(IllegalArgumentException.class, () ->
-            ds = new DijkstraSimple(noNodeGraph));
+            ds = new DijkstraEarlyStop(noNodeGraph));
         assertEquals("Graph must contain nodes.", e.getMessage());
     }
 
     //         |||| Case: graph is null ||||
     @Test void null_constructor_throws() {
         Exception e = assertThrows(IllegalArgumentException.class, () ->
-            ds = new DijkstraSimple(null));
+            ds = new DijkstraEarlyStop(null));
         assertEquals("Graph must not be null.", e.getMessage());    
     }
 
     //     |||| Case: attempt to calculate twice ||||
     //          uses smallGraph
     @Test void calculateTwice_calculate_throws() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         ds.calculate(sNormal, tNormal);
-        IllegalStateException e = assertThrows(IllegalStateException.class, () -> 
+        Exception e = assertThrows(IllegalStateException.class, () -> 
             ds.calculate(sNormal, tNormal));
         assertEquals("State must be reset before new calculation.", e.getMessage());
     }
 
     //     |||| Case: calculate with bad arguments ||||
     @Test void sourceTooHigh_calculate_throws() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         Exception e = assertThrows(IllegalArgumentException.class, () -> 
             ds.calculate(tooHigh, tNormal));
         assertEquals("source is not a valid node index", e.getMessage());
     }
 
     @Test void sourceTooLow_calculate_throws() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         Exception e = assertThrows(IllegalArgumentException.class, () -> 
             ds.calculate(tooLow, tNormal));
         assertEquals("source is not a valid node index", e.getMessage());
     }
 
     @Test void targetTooHigh_calculate_throws() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         Exception e = assertThrows(IllegalArgumentException.class, () -> 
             ds.calculate(sNormal, tooHigh));
         assertEquals("target is not a valid node index", e.getMessage());
     }
 
     @Test void targetTooLow_calculate_throws() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         Exception e = assertThrows(IllegalArgumentException.class, () -> 
             ds.calculate(sNormal, tooLow));
         assertEquals("target is not a valid node index", e.getMessage());
@@ -211,7 +225,7 @@ public class DijkstraSimpleTest {
     // |||| Case: source and target are too far apart
 
     @Test void nodesTooFarApart_calculate_throws() {
-        ds = new DijkstraSimple(tooFarApartGraph);
+        ds = new DijkstraEarlyStop(tooFarApartGraph);
         Exception e = assertThrows(ArithmeticException.class, () ->
             ds.calculate(sNormal, tNormal));
         assertEquals("Integer overflow: Distances are too high", e.getMessage());
@@ -224,17 +238,17 @@ public class DijkstraSimpleTest {
     //           uses noCalculation test data
 
     @Test void noCalculation_distance_returnsErrorCode() {
-        ds = new DijkstraSimple(noCalculation.graph);
+        ds = new DijkstraEarlyStop(noCalculation.graph);
         assertEquals(-1, ds.distance());
     }
 
     @Test void noCalculation_retrievePath_returnsNull() {
-        ds = new DijkstraSimple(noCalculation.graph);
+        ds = new DijkstraEarlyStop(noCalculation.graph);
         assertEquals(null, ds.retrievePath());
     }
 
     @Test void noCalcultion_relaxedEdges_returnMinusOne() {
-        ds = new DijkstraSimple(noCalculation.graph);
+        ds = new DijkstraEarlyStop(noCalculation.graph);
         assertEquals(-1, ds.relaxedEdges());
     }
 
@@ -242,25 +256,25 @@ public class DijkstraSimpleTest {
     //                uses noEdges
 
     @Test void graphContainsNoEdges_calculate_returnsFalse() {
-        ds = new DijkstraSimple(noEdges.graph);
+        ds = new DijkstraEarlyStop(noEdges.graph);
         assertFalse(ds.calculate(sNormal, tNormal));
     }
 
     @Test void graphContainsNoEdges_distance_returnsMAX() {
-        ds = new DijkstraSimple(noEdges.graph);
+        ds = new DijkstraEarlyStop(noEdges.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(Integer.MAX_VALUE, ds.distance());
     }
 
     @Test void graphContainsNoEdges_retrievePath_returnsNull() {
-        ds = new DijkstraSimple(noEdges.graph);
+        ds = new DijkstraEarlyStop(noEdges.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(null, ds.retrievePath());
 
     }
 
     @Test void graphContainsNoEdges_relaxedEdges_returnsZero() {
-        ds = new DijkstraSimple(noEdges.graph);
+        ds = new DijkstraEarlyStop(noEdges.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(0, ds.relaxedEdges());
     }
@@ -268,24 +282,24 @@ public class DijkstraSimpleTest {
     // |||| Case: Graph is not connected and source is disconnected from target ||||
     //            Uses disconnectedNodes
     @Test void nodesDisconnected_calculate_returnFalse() {
-        ds = new DijkstraSimple(disconnectedNodes.graph);
+        ds = new DijkstraEarlyStop(disconnectedNodes.graph);
         assertFalse(ds.calculate(sNormal, tNormal));
     }
 
     @Test void nodesDisconnected_distance_returnMAX() {
-        ds = new DijkstraSimple(disconnectedNodes.graph);
+        ds = new DijkstraEarlyStop(disconnectedNodes.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(Integer.MAX_VALUE, ds.distance());
     }
 
     @Test void nodesDisconnected_retrievePath_returnNull() {
-        ds = new DijkstraSimple(disconnectedNodes.graph);
+        ds = new DijkstraEarlyStop(disconnectedNodes.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(null, ds.retrievePath());
     }
 
     @Test void nodesDisconnected_relaxedEdges_returnCorrect() {
-        ds = new DijkstraSimple(disconnectedNodes.graph);
+        ds = new DijkstraEarlyStop(disconnectedNodes.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(disconnectedNodes.relaxedEdges, ds.relaxedEdges());
     }
@@ -296,76 +310,76 @@ public class DijkstraSimpleTest {
     //            Uses nodesEqual
 
     @Test void nodesEqual_calculate_returnsTrue() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         assertTrue(ds.calculate(sNormal, sNormal));
     }
 
     @Test void nodesEqual_distance_returnsZero() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         ds.calculate(sNormal, sNormal);
         assertEquals(0, ds.distance());
     }
 
     @Test void nodesEqual_retrievePath_returnsEmptyList() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         ds.calculate(sNormal, sNormal);
         assertEquals(new LinkedList<DirectedEdge>(), ds.retrievePath());
     }
 
     @Test void nodesEqual_relaxedEdges_returnsCorrect() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         ds.calculate(sNormal, sNormal);
-        assertEquals(smallGraphRelaxedEdges, ds.relaxedEdges());
+        assertEquals(nodesEqualRelaxededges, ds.relaxedEdges());
 
     }
 
     // |||| Case: source and target are adjacent ||||
 
     @Test void targetClose_calculate_returnsTrue() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         assertTrue(ds.calculate(sNormal, tClose));
     }
 
     @Test void targetClose_distance_returnsCorrect() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         ds.calculate(sNormal, tClose);
         assertEquals(targetClose.distance, ds.distance());
     }
 
     @Test void targetClose_retrievePath_returnsCorrect() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         ds.calculate(sNormal, tClose);
         assertEquals(targetClose.path, ds.retrievePath());
     }
 
     @Test void targetClose_relaxedEdge_returnsCorrect() {
-        ds = new DijkstraSimple(smallGraph);
+        ds = new DijkstraEarlyStop(smallGraph);
         ds.calculate(sNormal, tClose);
-        assertEquals(smallGraphRelaxedEdges, ds.relaxedEdges());
+        assertEquals(targetCloseRelaxedEdges, ds.relaxedEdges());
     }
 
     // |||| Case: Shortest path contains edges with 0 weight |||| 
 
     @Test void containsZeroWeight_calculate_returnsTrue() {
-        ds = new DijkstraSimple(containsZeroWeights.graph);
+        ds = new DijkstraEarlyStop(containsZeroWeights.graph);
         assertTrue(ds.calculate(sNormal, tNormal));
 
     }
 
     @Test void containsZeroWeight_distance_returnsCorrect() {
-        ds = new DijkstraSimple(containsZeroWeights.graph);
+        ds = new DijkstraEarlyStop(containsZeroWeights.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(containsZeroWeights.distance, ds.distance());
     }
 
     @Test void containsZeroWeight_retrievePath_returnsCorrect() {
-        ds = new DijkstraSimple(containsZeroWeights.graph);
+        ds = new DijkstraEarlyStop(containsZeroWeights.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(containsZeroWeights.path, ds.retrievePath());
     }
 
     @Test void containsZeroWeight_relaxedEdges_returnsCorrect() {
-        ds = new DijkstraSimple(containsZeroWeights.graph);
+        ds = new DijkstraEarlyStop(containsZeroWeights.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(containsZeroWeights.relaxedEdges, ds.relaxedEdges());
     }
@@ -373,18 +387,18 @@ public class DijkstraSimpleTest {
     // |||| Case: There are multiple shortest paths ||||
 
     @Test void multiplePaths_calculate_returnsTrue() {
-        ds = new DijkstraSimple(multiplePaths.graph);
+        ds = new DijkstraEarlyStop(multiplePaths.graph);
         assertTrue(ds.calculate(sNormal, tNormal));
     }
 
     @Test void multiplePaths_distance_returnsCorrect() {
-        ds = new DijkstraSimple(multiplePaths.graph);
+        ds = new DijkstraEarlyStop(multiplePaths.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(multiplePaths.distance, ds.distance());
     }
 
     @Test void multiplePaths_retrievePath_returnsEitherCorrect() {
-        ds = new DijkstraSimple(multiplePaths.graph);
+        ds = new DijkstraEarlyStop(multiplePaths.graph);
         ds.calculate(sNormal, tNormal);
         
         boolean isEither = (
@@ -397,8 +411,16 @@ public class DijkstraSimpleTest {
     }
 
     @Test void multiplePaths_relaxedEdges_returnsCorrect() {
-        ds = new DijkstraSimple(multiplePaths.graph);
+        ds = new DijkstraEarlyStop(multiplePaths.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(multiplePaths.relaxedEdges, ds.relaxedEdges());
     }
+
+    // |||| Case: target not the last node to be relaxed (early stop activated)||||
+    @Test void targetRelaxedEarly_relaxedEdges_returnsCorrect() {
+        ds = new DijkstraEarlyStop(mediumGraph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(mediumGraphRelaxedEdges, ds.relaxedEdges());
+    }
 }
+
