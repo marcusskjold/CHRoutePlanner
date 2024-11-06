@@ -157,14 +157,16 @@ public class DijkstraSimpleTest {
     //        using noNodeGraph
 
     @Test void graphContainsNoNodes_constructor_throws() {
-        assertThrows(IllegalArgumentException.class, () ->
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
             ds = new DijkstraSimple(noNodeGraph));
+        assertEquals("Graph must contain nodes.", e.getMessage());
     }
 
     //         |||| Case: graph is null ||||
     @Test void null_constructor_throws() {
-        assertThrows(IllegalArgumentException.class, () ->
+        Exception e = assertThrows(IllegalArgumentException.class, () ->
             ds = new DijkstraSimple(null));
+        assertEquals("Graph must not be null.", e.getMessage());    
     }
 
     //     |||| Case: attempt to calculate twice ||||
@@ -172,33 +174,38 @@ public class DijkstraSimpleTest {
     @Test void calculateTwice_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
         ds.calculate(sNormal, tNormal);
-        assertThrows(IllegalStateException.class, () ->
+        Error e = assertThrows(Error.class, () -> 
             ds.calculate(sNormal, tNormal));
+        assertEquals("State must be reset before new calculation.", e.getMessage());
     }
 
     //     |||| Case: calculate with bad arguments ||||
     @Test void sourceTooHigh_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
-        assertThrows(IllegalArgumentException.class, () ->
+        Exception e = assertThrows(IllegalArgumentException.class, () -> 
             ds.calculate(tooHigh, tNormal));
+        assertEquals("source is not a valid node index", e.getMessage());
     }
 
     @Test void sourceTooLow_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
-        assertThrows(IllegalArgumentException.class, () ->
+        Exception e = assertThrows(IllegalArgumentException.class, () -> 
             ds.calculate(tooLow, tNormal));
+        assertEquals("source is not a valid node index", e.getMessage());
     }
 
     @Test void targetTooHigh_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
-        assertThrows(IllegalArgumentException.class, () ->
+        Exception e = assertThrows(IllegalArgumentException.class, () -> 
             ds.calculate(sNormal, tooHigh));
+        assertEquals("target is not a valid node index", e.getMessage());
     }
 
     @Test void targetTooLow_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
-        assertThrows(IllegalArgumentException.class, () ->
+        Exception e = assertThrows(IllegalArgumentException.class, () -> 
             ds.calculate(sNormal, tooLow));
+        assertEquals("target is not a valid node index", e.getMessage());
     }
 
     // |||| Case: source and target are too far apart

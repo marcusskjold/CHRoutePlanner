@@ -45,14 +45,14 @@ public class Main {
         long totalEdgeRelax = 0;
         for(int i=0; i<pairNums; i++) {
             ShortestPathAlgorithm sp = createAlgorithm(type, graph); //Can throw exception
-            System.out.println("generating pair no " + (i + 1));
+            //System.out.println("generating pair no " + (i + 1));
             int range = graph.V();
             int[] pair = new int[]{r.nextInt(range), r.nextInt(range)};
             int source = pair[0];
             int target = pair[1];
             //System.out.println("source: " + source);
             //System.out.println("target: " + target);
-            System.out.println("starting calculation no: " + i);
+            //System.out.println("starting calculation no: " + i);
             startTime = System.currentTimeMillis();
             sp.calculate(source, target);
             int d = sp.distance();
@@ -74,15 +74,19 @@ public class Main {
 
     public static void main(String[] args) {
         //AlgorithmType a;
-        System.out.println("Current directory: " + System.getProperty("user.dir"));
+        //System.out.println("Current directory: " + System.getProperty("user.dir"));
 
         try {
             System.out.println("generating graph");
             InputStream input = new FileInputStream("denmark.graph.txt");
             IndexedGraph graph = new IndexedGraph(input);
             System.out.println("finished generating graph");
-            computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 10, DEFAULT_SEED);
-            //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 10, DEFAULT_SEED);
+            System.out.println("benchmarking simple");
+            computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 100, DEFAULT_SEED);
+            System.out.println("Benchmarking early stop");
+            computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 100, DEFAULT_SEED);
+            System.out.println("Benchmarking bidirectional");
+            computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
         } catch (IOException e) {
             e.printStackTrace();
         }
