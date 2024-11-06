@@ -174,7 +174,7 @@ public class DijkstraSimpleTest {
     @Test void calculateTwice_calculate_throws() {
         ds = new DijkstraSimple(smallGraph);
         ds.calculate(sNormal, tNormal);
-        Error e = assertThrows(Error.class, () -> 
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> 
             ds.calculate(sNormal, tNormal));
         assertEquals("State must be reset before new calculation.", e.getMessage());
     }
