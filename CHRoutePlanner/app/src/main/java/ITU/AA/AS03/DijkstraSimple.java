@@ -23,9 +23,9 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
     protected IndexedGraph G;
     protected IndexMinPQ<Integer> pq;
     protected int t;
+    private int s;
     private int[] distTo;
     private DirectedEdge[] edgeTo;
-    private int s;
     private int V;
     private int edgeRelaxationCount;
     private boolean ready;
@@ -65,7 +65,7 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
      * @param source the index of the source node,
      * @param target the target node.
      * @return if a shortest path was found
-     * @throws Error if calculate is called multiple times.
+     * @throws IllegalStateException if calculate is called multiple times.
      * @throws IllegalArgumentException if source or target is invalid indexes in the graph
      */
     @Override public boolean calculate (int source, int target) {
@@ -76,7 +76,7 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
         if (target < 0 || target >= V)
             throw new IllegalArgumentException("target is not a valid node index");
         ready = false;
-        s = source;
+        s = source; // TODO: Remove s instance variable????
         t = target;
         distTo[source] = 0;
         pq.insert(source, distTo[source]);
@@ -141,6 +141,7 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
         }
     }
 
+    /** Logic for finding shortest path */
     protected void findShortestPath() {
         while (!pq.isEmpty()) {
             int node = pq.delMin();
