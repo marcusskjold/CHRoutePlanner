@@ -23,8 +23,8 @@ public class DijkstraBiTest {
 
     DijkstraBi ds;
 
-    IndexedGraph smallGraph;
-    IndexedGraph tooFarApartGraph;
+    GraphLocations smallGraph;
+    GraphLocations tooFarApartGraph;
     int sNormal = 0;
     int tNormal = 3;
     int tooHigh = 100;
@@ -35,7 +35,7 @@ public class DijkstraBiTest {
     LinkedList<DirectedEdge> multiplePathTwo;
 
     // Errors
-    IndexedGraph noNodeGraph;
+    GraphLocations noNodeGraph;
     TestData noCalculation;
     TestData noEdges;
     TestData disconnectedNodes;
@@ -51,7 +51,7 @@ public class DijkstraBiTest {
 
     @Nested
     class TestData {
-        IndexedGraph graph;
+        GraphLocations graph;
         int distance;
         int relaxedEdges;
         LinkedList<DirectedEdge> path;
@@ -62,27 +62,18 @@ public class DijkstraBiTest {
 
         // Graphs
 
-        noNodeGraph = new IndexedGraph(0);
-        smallGraph = new IndexedGraph(4);
-        smallGraph.addEdge(new DirectedEdge(0, 1, 10));
-        smallGraph.addEdge(new DirectedEdge(0, 2, 20));
+        noNodeGraph = new GraphLocations(0);
+        smallGraph = new GraphLocations(4);
+        smallGraph.addUndirectedEdge(0, 1, 10);
+        smallGraph.addUndirectedEdge(0, 2, 20);
+        smallGraph.addUndirectedEdge(1, 2, 10);
+        smallGraph.addUndirectedEdge(1, 3, 30);
+        smallGraph.addUndirectedEdge(2, 3, 10);
 
-
-        smallGraph.addEdge(new DirectedEdge(1, 0, 10));
-        smallGraph.addEdge(new DirectedEdge(1, 2, 10));
-        smallGraph.addEdge(new DirectedEdge(1, 3, 30));
-
-        smallGraph.addEdge(new DirectedEdge(2, 0, 20));
-        smallGraph.addEdge(new DirectedEdge(2, 1, 10));
-        smallGraph.addEdge(new DirectedEdge(2, 3, 10));
-
-        smallGraph.addEdge(new DirectedEdge(3, 2, 10));
-        smallGraph.addEdge(new DirectedEdge(3, 1, 30));
-
-        tooFarApartGraph = new IndexedGraph(4);
-        tooFarApartGraph.addEdge(new DirectedEdge(0, 1, 1000000000));
-        tooFarApartGraph.addEdge(new DirectedEdge(1, 2, 1000000000));
-        tooFarApartGraph.addEdge(new DirectedEdge(2, 3, 1000000000));
+        tooFarApartGraph = new GraphLocations(4);
+        tooFarApartGraph.addUndirectedEdge(0, 1, 1000000000);
+        tooFarApartGraph.addUndirectedEdge(1, 2, 1000000000);
+        tooFarApartGraph.addUndirectedEdge(2, 3, 1000000000);
         // TestData
 
         // No calculation
@@ -90,20 +81,20 @@ public class DijkstraBiTest {
         noCalculation.graph = smallGraph;
 
         // No edges
-        IndexedGraph noEdgeGraph = new IndexedGraph(4);
+        GraphLocations noEdgeGraph = new GraphLocations(4);
         noEdges = new TestData();
         noEdges.graph = noEdgeGraph;
         noEdges.relaxedEdges = 0;
 
         // Disconnected nodes
-        IndexedGraph disconnectedGraph = new IndexedGraph(5);
-        disconnectedGraph.addEdge(new DirectedEdge(0, 1, 10));
-        disconnectedGraph.addEdge(new DirectedEdge(0, 2, 20));
-        disconnectedGraph.addEdge(new DirectedEdge(1, 2, 10));
-        disconnectedGraph.addEdge(new DirectedEdge(4, 3, 30));
+        GraphLocations disconnectedGraph = new GraphLocations(5);
+        disconnectedGraph.addUndirectedEdge(0, 1, 10);
+        disconnectedGraph.addUndirectedEdge(0, 2, 20);
+        disconnectedGraph.addUndirectedEdge(1, 2, 10);
+        disconnectedGraph.addUndirectedEdge(4, 3, 30);
         disconnectedNodes = new TestData();
         disconnectedNodes.graph = disconnectedGraph;
-        disconnectedNodes.relaxedEdges = 2;
+        disconnectedNodes.relaxedEdges = 3;
 
         // ===========================
         // Validation
@@ -116,12 +107,12 @@ public class DijkstraBiTest {
         targetClose.relaxedEdges = 5;
 
         // Shortest path includes edge with zero weight
-        IndexedGraph zeroWeightGraph = new IndexedGraph(4);
-        zeroWeightGraph.addEdge(new DirectedEdge(0, 1, 10));
-        zeroWeightGraph.addEdge(new DirectedEdge(0, 2, 0));
-        zeroWeightGraph.addEdge(new DirectedEdge(1, 2, 10));
-        zeroWeightGraph.addEdge(new DirectedEdge(1, 3, 30));
-        zeroWeightGraph.addEdge(new DirectedEdge(2, 3, 10));
+        GraphLocations zeroWeightGraph = new GraphLocations(4);
+        zeroWeightGraph.addUndirectedEdge(0, 1, 10);
+        zeroWeightGraph.addUndirectedEdge(0, 2, 0);
+        zeroWeightGraph.addUndirectedEdge(1, 2, 10);
+        zeroWeightGraph.addUndirectedEdge(1, 3, 30);
+        zeroWeightGraph.addUndirectedEdge(2, 3, 10);
         containsZeroWeights = new TestData();
         containsZeroWeights.graph = zeroWeightGraph;
         LinkedList<DirectedEdge> zeroWeightPath = new LinkedList<>();
@@ -129,15 +120,15 @@ public class DijkstraBiTest {
         zeroWeightPath.add(new DirectedEdge(2, 3, 10));
         containsZeroWeights.path = zeroWeightPath;
         containsZeroWeights.distance = 10;
-        containsZeroWeights.relaxedEdges = 3;
+        containsZeroWeights.relaxedEdges = 5;
 
         // Multiple shortest paths
-        IndexedGraph multiplePathGraph = new IndexedGraph(4);
-        multiplePathGraph.addEdge(new DirectedEdge(0, 1, 10));
-        multiplePathGraph.addEdge(new DirectedEdge(0, 2, 10));
-        multiplePathGraph.addEdge(new DirectedEdge(1, 2, 10));
-        multiplePathGraph.addEdge(new DirectedEdge(1, 3, 10));
-        multiplePathGraph.addEdge(new DirectedEdge(2, 3, 10));
+        GraphLocations multiplePathGraph = new GraphLocations(4);
+        multiplePathGraph.addUndirectedEdge(0, 1, 10);
+        multiplePathGraph.addUndirectedEdge(0, 2, 10);
+        multiplePathGraph.addUndirectedEdge(1, 2, 10);
+        multiplePathGraph.addUndirectedEdge(1, 3, 10);
+        multiplePathGraph.addUndirectedEdge(2, 3, 10);
         multiplePathOne = new LinkedList<DirectedEdge>();
         multiplePathOne.add(new DirectedEdge(0, 1, 10));
         multiplePathOne.add(new DirectedEdge(1, 3, 10));
@@ -146,7 +137,7 @@ public class DijkstraBiTest {
         multiplePathTwo.add(new DirectedEdge(2, 3, 10));
         multiplePaths = new TestData();
         multiplePaths.graph = multiplePathGraph;
-        multiplePaths.relaxedEdges = 3;
+        multiplePaths.relaxedEdges = 5;
         multiplePaths.distance = 20;
 
 

@@ -11,14 +11,15 @@ import java.util.Scanner;
 public class IndexedGraph {
     private Map<Long, Integer> idTranslator;
     private int V; // Number of nodes
-    private int maxSize;
     private int E;
     private long[] ids;
     private float[][] locs;
     private List<DirectedEdge>[] edges;
+    // PLAN: Split up the graph so there is a minimal class containing the graph itself,
+    //       then locations and id can live in the wrapper class.
+    //       This will make it much easier to e.g. have an inverted graph.
 
     public IndexedGraph(int maxSize) {
-        this.maxSize = maxSize;
         V = maxSize;
         E = 0;
         ids = new long[maxSize];
@@ -36,7 +37,6 @@ public class IndexedGraph {
         if (input == null) throw new IllegalArgumentException("Input is null");
         Scanner sc = new Scanner(input);
         V = sc.nextInt();
-        maxSize = V;
         if (V < 1) {
             sc.close();
             throw new IllegalArgumentException("No nodes given");
@@ -64,16 +64,17 @@ public class IndexedGraph {
             int u = idTranslator.get(sc.nextLong());
             int v = idTranslator.get(sc.nextLong());
             int w = sc.nextInt();
-            edges[u].add(new DirectedEdge(u, v, w));
-            edges[v].add(new DirectedEdge(v, u, w));
+            addUndirectedEdge(u, v, w);
         }
 
         sc.close();
     }
 
-    // TODO: Add edge method and add node method.
-    public void addEdge(DirectedEdge e) {
-        edges[e.from()].add(e);
+    public void addEdge(DirectedEdge e) { edges[e.from()].add(e); }
+
+    public void addUndirectedEdge(int u, int v, int w) {
+        edges[u].add(new DirectedEdge(u, v, w));
+        edges[v].add(new DirectedEdge(v, u, w));
     }
 
     // ============== Getters ==================

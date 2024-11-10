@@ -12,11 +12,11 @@ import java.util.List;
 
 
 /** DijkstraBi
- * 
+ *
  */
 public class DijkstraBi implements ShortestPathAlgorithm {
 
-    private IndexedGraph G;
+    private GraphLocations G;
     private int V;
     private boolean ready;
     private int edgeRelaxationCount;
@@ -30,16 +30,21 @@ public class DijkstraBi implements ShortestPathAlgorithm {
     private Dijkstra r;
     private Dijkstra l;
 
-    
+
     private class Dijkstra {
         IndexMinPQ<Integer> pq;
         int[] distTo;
         DirectedEdge[] edgeTo;
+        boolean[] reached;
+        boolean inverted;
+        Dijkstra opposite;
 
-        Dijkstra(int V) {
+        Dijkstra(int V, boolean inverted) {
+            this.inverted = inverted;
             pq = new IndexMinPQ<Integer>(V);
             edgeTo = new DirectedEdge[V];
             distTo = new int[V];
+            reached = new boolean[V];
             for (int v = 0; v < V; v++)
                 distTo[v] = Integer.MAX_VALUE;
         }
@@ -53,24 +58,18 @@ public class DijkstraBi implements ShortestPathAlgorithm {
      * @param  G the edge-weighted digraph
      * @throws if graph is null or has no nodes.
      */
-    public DijkstraBi(IndexedGraph graph) {
-
-        if (graph == null)
-            throw new IllegalArgumentException("Graph must not be null.");
+    public DijkstraBi(GraphLocations graph) {
+        if (graph == null) throw new IllegalArgumentException("Graph must not be null.");
         V = graph.V();
-        if (V < 1)
-            throw new IllegalArgumentException("Graph must contain nodes.");
+        if (V < 1) throw new IllegalArgumentException("Graph must contain nodes.");
         G = graph;
-        
-        l = new Dijkstra(V);
-        r = new Dijkstra(V);
 
-        s = -1;
-        t = -1;
-        edgeRelaxationCount = -1;
+        r = new Dijkstra(V, false);
+        l = new Dijkstra(V, true);
+        r.opposite = l; l.opposite = r;
+        s = -1; t = -1; edgeRelaxationCount = -1;
         d = Integer.MAX_VALUE;
-        settled = new boolean[V]; //Initialize array to check whether already visited
-
+        settled = new boolean[V];
         ready = true;
     }
 
@@ -83,7 +82,6 @@ public class DijkstraBi implements ShortestPathAlgorithm {
      * @throws IllegalArgumentException if source or target is invalid indexes in the graph
      */
     @Override public boolean calculate(int source, int target) {
-
         if (!ready)
             throw new IllegalStateException("State must be reset before new calculation.");
         if (source < 0 || source >= V)
@@ -95,8 +93,8 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         edgeRelaxationCount = 0;
         s = source; t = target;
 
-        r.distTo[s] = 0; r.pq.insert(source, 0);
-        l.distTo[t] = 0; l.pq.insert(target, 0);
+        r.distTo[s] = 0; r.reached[s] = true; r.pq.insert(s, 0);
+        l.distTo[t] = 0; l.reached[t] = true; l.pq.insert(t, 0);
 
         findShortestPath();
 
@@ -132,12 +130,8 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         if (d == Integer.MAX_VALUE) return null;                // If not connected
 
         LinkedList<DirectedEdge> path = new LinkedList<DirectedEdge>();
-        for (
-            DirectedEdge e = r.edgeTo[meetPoint]; e != null; e = r.edgeTo[e.from()]
-        ) { path.addFirst(e); }
-        for (
-            DirectedEdge e = l.edgeTo[meetPoint]; e != null; e = l.edgeTo[e.from()]
-        ) { path.add(e); }
+        for ( DirectedEdge e = r.edgeTo[meetPoint]; e != null; e = r.edgeTo[e.from()]) { path.addFirst(e); }
+        for ( DirectedEdge e = l.edgeTo[meetPoint]; e != null; e = l.edgeTo[e.to()])   { path.add(e); }
 
         return path;
     }
@@ -145,57 +139,51 @@ public class DijkstraBi implements ShortestPathAlgorithm {
     // =================== Private helper methods ========================
 
     private void findShortestPath() {
-        if (s == t) { 
-            d = 0;
-            return;
-        }
+        if (s == t) { d = 0; return; }
 
         while (true) {
             boolean eR = (r.pq.isEmpty());
             boolean eL = (l.pq.isEmpty());
             if (eR && eL) return;
-            
+
             // Determine side
-            if (eR || (!eL && (l.pq.minKey() < r.pq.minKey()))) c = l;
-            else                                                c = r;
+            if (eR || (!eL && l.pq.minKey() < r.pq.minKey())) c = l;
+            else                                              c = r;
 
             int u = c.pq.delMin();
-
             if (settled[u]) return;
-
             settled[u] = true;
-
-            for (DirectedEdge e : G.getEdges(u)) {
-                relax(e);
-                int v = e.to();
-                int distL = l.distTo[v];
-                int distR = r.distTo[v];
-
-                // First check that they have each been reached (otherwise overflow***)
-                if(distL < Integer.MAX_VALUE && distR < Integer.MAX_VALUE) { // TODO: Consider adding reached array to avoid this check
-                    int distCandidate = distL + distR;
-                    if (distCandidate < distL)
-                        throw new ArithmeticException("Integer overflow: Distances are too high");
-                    if(distCandidate < d) {
-                        d = distCandidate;
-                        meetPoint = v;
-                    }
-                }
-            }
+            List<DirectedEdge> edges = c.inverted ? G.edgesTo(u)
+                                                  : G.edgesFrom(u);
+            for (DirectedEdge e : edges) relax(e);
         }
     }
 
-    protected void relax(DirectedEdge e) {
-        int v = e.from(), w = e.to();
-        int newDist = c.distTo[v] + e.weight();
-        if (newDist < c.distTo[v])
-            throw new ArithmeticException("Integer overflow: Distances are too high");
-        if (c.distTo[w] > newDist) {
+    private void relax(DirectedEdge e) {
+        // Setup & early stopping
+        int u, v;
+        if (!c.inverted) { u = e.from(); v = e.to(); }
+        else             { v = e.from(); u = e.to(); }
+        int newDist = c.distTo[u] + e.weight();
+        if (newDist < c.distTo[u]) throw new ArithmeticException(
+            "Integer overflow: Distances are too high");
+        if (newDist < c.distTo[v]) {
             edgeRelaxationCount++;
-            c.distTo[w] = newDist;
-            c.edgeTo[w] = e;
-            if (c.pq.contains(w)) c.pq.decreaseKey(w, newDist);
-            else                  c.pq.insert(w, newDist);
+            c.distTo[v] = newDist;
+            c.edgeTo[v] = e;
+            if (c.pq.contains(v)) c.pq.decreaseKey(v, newDist);
+            else                  c.pq.insert(v, newDist);
+            c.reached[v] = true;
+        }
+
+        if (c.opposite.reached[v]) {
+            int dCandidate = newDist + c.opposite.distTo[v];
+            if (dCandidate < newDist) throw new ArithmeticException(
+                "Integer overflow: Distances are too high");
+            if(dCandidate < d) {
+                d = dCandidate;
+                meetPoint = v;
+            }
         }
     }
 
