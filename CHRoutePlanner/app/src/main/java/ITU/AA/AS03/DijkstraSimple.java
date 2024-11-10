@@ -145,7 +145,7 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
     protected void findShortestPath() {
         while (!pq.isEmpty()) {
             int node = pq.delMin();
-            for (DirectedEdge e : G.getEdges(node)){
+            for (DirectedEdge e : G.edgesFrom(node)){
                 relax(e);
             }
         }

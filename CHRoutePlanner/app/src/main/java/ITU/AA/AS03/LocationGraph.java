@@ -11,18 +11,14 @@ import java.util.Scanner;
  * Corresponds to a road network.
  * This implementation only represents bidirectional / undirected graphs.
  */
-public class GraphLocations {
+public class LocationGraph implements IndexedGraph {
     private Map<Long, Integer> idTranslator;
     private long[] ids;
     private float[][] locs;
     private WeightedDiGraph G;
 
-    public GraphLocations(int maxSize) {
-        G = new WeightedDiGraph(maxSize);
-
-    }
     /** Initializes graph with no edges */
-    public GraphLocations(int maxSize, long[] ids, float[][] locations) {
+    public LocationGraph(int maxSize, long[] ids, float[][] locations) {
         if (ids.length != maxSize)
             throw new IllegalArgumentException("maxSize and number of ids differ");
         if (locations.length != maxSize)
@@ -44,7 +40,7 @@ public class GraphLocations {
     /** Generate undirected graph from input stream.
      * This assumes the input stream is correct.
      */
-    public GraphLocations(InputStream input) throws IOException {
+    public LocationGraph(InputStream input) throws IOException {
         if (input == null) throw new IllegalArgumentException("Input is null");
         Scanner sc = new Scanner(input);
         int V = sc.nextInt();
@@ -79,37 +75,24 @@ public class GraphLocations {
         sc.close();
     }
 
+    @Override public void addUndirectedEdge(int u, int v, int w) { G.addUndirectedEdge(u, v, w); }
+
+    @Override public void addDirectedEdge(int u, int v, int w)   { G.addDirectedEdge  (u, v, w); }
+
     // ============== Getters ==================
+    //
+    public int getIndex(long id)                             { return idTranslator.get(id); }
 
-    public void addUndirectedEdge(int u, int v, int w) {
-        validateEdge(u, v, w);
-        G.addUndirectedEdge(u, v, w);
-    }
+    public float[] getLocation(int index)                    { return locs[index]; }
 
-    public void addDirectedEdge(int u, int v, int w) {
-        validateEdge(u, v, w);
-        G.addDirectedEdge(u, v, w);
-    }
+    public long getID(int index)                             { return ids[index]; }
 
-    public int getIndex(long id)                   { return idTranslator.get(id); }
+    @Override public List<DirectedEdge> edgesFrom(int index) { return G.edgesFrom(index); }
 
-    public List<DirectedEdge> edgesFrom(int index) { return G.edgesFrom(index); }
+    @Override public List<DirectedEdge> edgesTo(int index)   { return G.edgesTo(index); }
 
-    public List<DirectedEdge> edgesTo(int index)   { return G.edgesTo(index); }
+    @Override public int V()                                 { return G.V(); }
 
-    public float[] getLocation(int index)          { return locs[index]; }
+    @Override public int E()                                 { return G.E(); }
 
-    public long getID(int index)                   { return ids[index]; }
-
-    public int V()                                 { return G.V(); }
-
-    public int E()                                 { return G.E(); }
-
-    // ===========================
-    
-    private void validateEdge(int u, int v, int w) {
-        if (u >= G.V() || u < 0) throw new IllegalArgumentException("u does not correspond to a node");
-        if (v >= G.V() || v < 0) throw new IllegalArgumentException("v does not correspond to a node");
-        if (w < 0)               throw new IllegalArgumentException("weight is negative");
-    }
 }

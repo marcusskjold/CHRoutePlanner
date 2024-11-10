@@ -65,29 +65,29 @@ public class DijkstraEarlyStopTest {
 
         // Graphs
 
-        noNodeGraph = new IndexedGraph(0);
-        smallGraph = new IndexedGraph(4);
-        smallGraph.addEdge(new DirectedEdge(0, 1, 10));
-        smallGraph.addEdge(new DirectedEdge(0, 2, 20));
-        smallGraph.addEdge(new DirectedEdge(1, 2, 10));
-        smallGraph.addEdge(new DirectedEdge(1, 3, 30));
-        smallGraph.addEdge(new DirectedEdge(2, 3, 10));
+        noNodeGraph = new WeightedDiGraph(0);
+        smallGraph = new WeightedDiGraph(4);
+        smallGraph.addUndirectedEdge(0, 1, 10);
+        smallGraph.addUndirectedEdge(0, 2, 20);
+        smallGraph.addUndirectedEdge(1, 2, 10);
+        smallGraph.addUndirectedEdge(1, 3, 30);
+        smallGraph.addUndirectedEdge(2, 3, 10);
         
-        mediumGraph = new IndexedGraph(5);
-        mediumGraph.addEdge(new DirectedEdge(0, 1, 10));
-        mediumGraph.addEdge(new DirectedEdge(0, 2, 20));
-        mediumGraph.addEdge(new DirectedEdge(1, 2, 10));
-        mediumGraph.addEdge(new DirectedEdge(1, 3, 30));
-        mediumGraph.addEdge(new DirectedEdge(2, 3, 10));
-        mediumGraph.addEdge(new DirectedEdge(3,4,50));
+        mediumGraph = new WeightedDiGraph(5);
+        mediumGraph.addUndirectedEdge(0, 1, 10);
+        mediumGraph.addUndirectedEdge(0, 2, 20);
+        mediumGraph.addUndirectedEdge(1, 2, 10);
+        mediumGraph.addUndirectedEdge(1, 3, 30);
+        mediumGraph.addUndirectedEdge(2, 3, 10);
+        mediumGraph.addUndirectedEdge(3,4,50);
 
 
 
 
-        tooFarApartGraph = new IndexedGraph(4);
-        tooFarApartGraph.addEdge(new DirectedEdge(0, 1, 1000000000));
-        tooFarApartGraph.addEdge(new DirectedEdge(1, 2, 1000000000));
-        tooFarApartGraph.addEdge(new DirectedEdge(2, 3, 1000000000));
+        tooFarApartGraph = new WeightedDiGraph(4);
+        tooFarApartGraph.addUndirectedEdge(0, 1, 1000000000);
+        tooFarApartGraph.addUndirectedEdge(1, 2, 1000000000);
+        tooFarApartGraph.addUndirectedEdge(2, 3, 1000000000);
         // TestData
 
         // No calculation
@@ -95,17 +95,17 @@ public class DijkstraEarlyStopTest {
         noCalculation.graph = smallGraph;
 
         // No edges
-        IndexedGraph noEdgeGraph = new IndexedGraph(4);
+        IndexedGraph noEdgeGraph = new WeightedDiGraph(4);
         noEdges = new TestData();
         noEdges.graph = noEdgeGraph;
         noEdges.relaxedEdges = 0;
 
         // Disconnected nodes
-        IndexedGraph disconnectedGraph = new IndexedGraph(5);
-        disconnectedGraph.addEdge(new DirectedEdge(0, 1, 10));
-        disconnectedGraph.addEdge(new DirectedEdge(0, 2, 20));
-        disconnectedGraph.addEdge(new DirectedEdge(1, 2, 10));
-        disconnectedGraph.addEdge(new DirectedEdge(4, 3, 30));
+        IndexedGraph disconnectedGraph = new WeightedDiGraph(5);
+        disconnectedGraph.addUndirectedEdge(0, 1, 10);
+        disconnectedGraph.addUndirectedEdge(0, 2, 20);
+        disconnectedGraph.addUndirectedEdge(1, 2, 10);
+        disconnectedGraph.addUndirectedEdge(4, 3, 30);
         disconnectedNodes = new TestData();
         disconnectedNodes.graph = disconnectedGraph;
         disconnectedNodes.relaxedEdges = 2;
@@ -120,12 +120,12 @@ public class DijkstraEarlyStopTest {
         targetClose.distance = 10;
 
         // Shortest path includes edge with zero weight
-        IndexedGraph zeroWeightGraph = new IndexedGraph(4);
-        zeroWeightGraph.addEdge(new DirectedEdge(0, 1, 10));
-        zeroWeightGraph.addEdge(new DirectedEdge(0, 2, 0));
-        zeroWeightGraph.addEdge(new DirectedEdge(1, 2, 10));
-        zeroWeightGraph.addEdge(new DirectedEdge(1, 3, 30));
-        zeroWeightGraph.addEdge(new DirectedEdge(2, 3, 10));
+        IndexedGraph zeroWeightGraph = new WeightedDiGraph(4);
+        zeroWeightGraph.addUndirectedEdge(0, 1, 10);
+        zeroWeightGraph.addUndirectedEdge(0, 2, 0);
+        zeroWeightGraph.addUndirectedEdge(1, 2, 10);
+        zeroWeightGraph.addUndirectedEdge(1, 3, 30);
+        zeroWeightGraph.addUndirectedEdge(2, 3, 10);
         containsZeroWeights = new TestData();
         containsZeroWeights.graph = zeroWeightGraph;
         LinkedList<DirectedEdge> zeroWeightPath = new LinkedList<>();
@@ -136,12 +136,12 @@ public class DijkstraEarlyStopTest {
         containsZeroWeights.relaxedEdges = 3;
 
         // Multiple shortest paths
-        IndexedGraph multiplePathGraph = new IndexedGraph(4);
-        multiplePathGraph.addEdge(new DirectedEdge(0, 1, 10));
-        multiplePathGraph.addEdge(new DirectedEdge(0, 2, 10));
-        multiplePathGraph.addEdge(new DirectedEdge(1, 2, 10));
-        multiplePathGraph.addEdge(new DirectedEdge(1, 3, 10));
-        multiplePathGraph.addEdge(new DirectedEdge(2, 3, 10));
+        IndexedGraph multiplePathGraph = new WeightedDiGraph(4);
+        multiplePathGraph.addUndirectedEdge(0, 1, 10);
+        multiplePathGraph.addUndirectedEdge(0, 2, 10);
+        multiplePathGraph.addUndirectedEdge(1, 2, 10);
+        multiplePathGraph.addUndirectedEdge(1, 3, 10);
+        multiplePathGraph.addUndirectedEdge(2, 3, 10);
         multiplePathOne = new LinkedList<DirectedEdge>();
         multiplePathOne.add(new DirectedEdge(0, 1, 10));
         multiplePathOne.add(new DirectedEdge(1, 3, 10));

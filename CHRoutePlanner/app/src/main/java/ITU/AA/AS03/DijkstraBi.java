@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class DijkstraBi implements ShortestPathAlgorithm {
 
-    private GraphLocations G;
+    private IndexedGraph G;
     private int V;
     private boolean ready;
     private int edgeRelaxationCount;
@@ -58,7 +58,7 @@ public class DijkstraBi implements ShortestPathAlgorithm {
      * @param  G the edge-weighted digraph
      * @throws if graph is null or has no nodes.
      */
-    public DijkstraBi(GraphLocations graph) {
+    public DijkstraBi(IndexedGraph graph) {
         if (graph == null) throw new IllegalArgumentException("Graph must not be null.");
         V = graph.V();
         if (V < 1) throw new IllegalArgumentException("Graph must contain nodes.");

@@ -12,7 +12,7 @@ public class DijkstraEarlyStop extends DijkstraSimple {
             if (node == t) {
                 break;
             }
-            for (DirectedEdge e : G.getEdges(node)){
+            for (DirectedEdge e : G.edgesFrom(node)){
                 relax(e);
             }
         }

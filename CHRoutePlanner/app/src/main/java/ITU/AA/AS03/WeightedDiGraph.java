@@ -3,13 +3,13 @@ package ITU.AA.AS03;
 import java.util.LinkedList;
 import java.util.List;
 
-public class WeightedDiGraph {
+public class WeightedDiGraph implements IndexedGraph {
     private int V;
     private int E;
     private List<DirectedEdge>[] edgesFrom;
     private List<DirectedEdge>[] edgesTo;
 
-    protected WeightedDiGraph(int V) {
+    public WeightedDiGraph(int V) {
         edgesFrom = (LinkedList<DirectedEdge>[]) new LinkedList[V];
         edgesTo   = (LinkedList<DirectedEdge>[]) new LinkedList[V];
         for (int i = 0; i < V; i++) {
@@ -20,15 +20,15 @@ public class WeightedDiGraph {
         E = 0;
     }
 
-    protected void addDirectedEdge(int u, int v, int w) {
-        DirectedEdge e = new DirectedEdge(u, v, w);
+    @Override public void addDirectedEdge(int u, int v, int w) {
+        DirectedEdge e = validateEdge(u, v, w);
         edgesFrom[u].add(e);
         edgesTo[v]  .add(e);
         E++;
     }
 
-    protected void addUndirectedEdge(int u, int v, int w) {
-        DirectedEdge other   = new DirectedEdge(v, u, w);
+    @Override public void addUndirectedEdge(int u, int v, int w) {
+        DirectedEdge other   = validateEdge(v, u, w);
         DirectedEdge either  = new DirectedEdge(u, v, w);
         edgesFrom[u].add(either);
         edgesTo  [v].add(either);
@@ -37,10 +37,20 @@ public class WeightedDiGraph {
         E += 2;
     }
 
-    protected List<DirectedEdge> edgesTo(int index)   { return edgesTo[index]; }
-    protected List<DirectedEdge> edgesFrom(int index) { return edgesFrom[index]; }
+    @Override public List<DirectedEdge> edgesTo(int index)   { return edgesTo[index]; }
 
-    protected int V() { return V; }
+    @Override public List<DirectedEdge> edgesFrom(int index) { return edgesFrom[index]; }
 
-    protected int E() { return E; }
+    @Override public int V() { return V; }
+
+    @Override public int E() { return E; }
+
+    // =================== Helper methods =================
+    
+    private DirectedEdge validateEdge(int u, int v, int w) {
+        if (u >= V || u < 0) throw new IllegalArgumentException("u does not correspond to a node");
+        if (v >= V || v < 0) throw new IllegalArgumentException("v does not correspond to a node");
+        if (w < 0)           throw new IllegalArgumentException("weight is negative");
+        return new DirectedEdge(u, v, w);
+    }
 }

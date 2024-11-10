@@ -23,8 +23,8 @@ public class DijkstraBiTest {
 
     DijkstraBi ds;
 
-    GraphLocations smallGraph;
-    GraphLocations tooFarApartGraph;
+    IndexedGraph smallGraph;
+    IndexedGraph tooFarApartGraph;
     int sNormal = 0;
     int tNormal = 3;
     int tooHigh = 100;
@@ -35,8 +35,8 @@ public class DijkstraBiTest {
     LinkedList<DirectedEdge> multiplePathTwo;
 
     // Errors
-    GraphLocations directedGraph;
-    GraphLocations noNodeGraph;
+    IndexedGraph directedGraph;
+    IndexedGraph noNodeGraph;
     TestData noCalculation;
     TestData noEdges;
     TestData disconnectedNodes;
@@ -53,7 +53,7 @@ public class DijkstraBiTest {
 
     @Nested
     class TestData {
-        GraphLocations graph;
+        IndexedGraph graph;
         int distance;
         int relaxedEdges;
         LinkedList<DirectedEdge> path;
@@ -64,15 +64,15 @@ public class DijkstraBiTest {
 
         // Graphs
 
-        noNodeGraph = new GraphLocations(0);
-        smallGraph = new GraphLocations(4);
+        noNodeGraph = new WeightedDiGraph(0);
+        smallGraph = new WeightedDiGraph(4);
         smallGraph.addUndirectedEdge(0, 1, 10);
         smallGraph.addUndirectedEdge(0, 2, 20);
         smallGraph.addUndirectedEdge(1, 2, 10);
         smallGraph.addUndirectedEdge(1, 3, 30);
         smallGraph.addUndirectedEdge(2, 3, 10);
 
-        tooFarApartGraph = new GraphLocations(4);
+        tooFarApartGraph = new WeightedDiGraph(4);
         tooFarApartGraph.addUndirectedEdge(0, 1, 1000000000);
         tooFarApartGraph.addUndirectedEdge(1, 2, 1000000000);
         tooFarApartGraph.addUndirectedEdge(2, 3, 1000000000);
@@ -83,13 +83,13 @@ public class DijkstraBiTest {
         noCalculation.graph = smallGraph;
 
         // No edges
-        GraphLocations noEdgeGraph = new GraphLocations(4);
+        IndexedGraph noEdgeGraph = new WeightedDiGraph(4);
         noEdges = new TestData();
         noEdges.graph = noEdgeGraph;
         noEdges.relaxedEdges = 0;
 
         // Disconnected nodes
-        GraphLocations disconnectedGraph = new GraphLocations(5);
+        IndexedGraph disconnectedGraph = new WeightedDiGraph(5);
         disconnectedGraph.addUndirectedEdge(0, 1, 10);
         disconnectedGraph.addUndirectedEdge(0, 2, 20);
         disconnectedGraph.addUndirectedEdge(1, 2, 10);
@@ -109,7 +109,7 @@ public class DijkstraBiTest {
         targetClose.relaxedEdges = 5;
 
         // Shortest path includes edge with zero weight
-        GraphLocations zeroWeightGraph = new GraphLocations(4);
+        IndexedGraph zeroWeightGraph = new WeightedDiGraph(4);
         zeroWeightGraph.addUndirectedEdge(0, 1, 10);
         zeroWeightGraph.addUndirectedEdge(0, 2, 0);
         zeroWeightGraph.addUndirectedEdge(1, 2, 10);
@@ -125,7 +125,7 @@ public class DijkstraBiTest {
         containsZeroWeights.relaxedEdges = 5;
 
         // Multiple shortest paths
-        GraphLocations multiplePathGraph = new GraphLocations(4);
+        IndexedGraph multiplePathGraph = new WeightedDiGraph(4);
         multiplePathGraph.addUndirectedEdge(0, 1, 10);
         multiplePathGraph.addUndirectedEdge(0, 2, 10);
         multiplePathGraph.addUndirectedEdge(1, 2, 10);
@@ -143,13 +143,13 @@ public class DijkstraBiTest {
         multiplePaths.distance = 20;
 
         // Directional issues
-        directedGraph = new GraphLocations(4);
+        directedGraph = new WeightedDiGraph(4);
         directedGraph.addDirectedEdge(0, 1, 10);
         directedGraph.addDirectedEdge(1, 2, 10);
         directedGraph.addDirectedEdge(3, 2, 10);
 
         // Bidirectional search specific test
-        GraphLocations falseShortestPathGraph = new GraphLocations(6);
+        IndexedGraph falseShortestPathGraph = new WeightedDiGraph(6);
         falseShortestPathGraph.addUndirectedEdge(0, 1, 30);
         falseShortestPathGraph.addUndirectedEdge(0, 2, 10);
 

@@ -23,7 +23,7 @@ public class Main {
 
     //Helper method to create new instance of the provided algorithmtype
     //on the provided graph
-    private static ShortestPathAlgorithm createAlgorithm(AlgorithmType type, GraphLocations graph) {
+    private static ShortestPathAlgorithm createAlgorithm(AlgorithmType type, IndexedGraph graph) {
         switch(type) {
             //case SIMPLEDIJKSTRA:
             //    return new DijkstraSimple(graph);
@@ -39,7 +39,7 @@ public class Main {
     }
 
     //Compute shortest distance for a 1000 randomly generated pairs (maybe refactor pair generation***)
-    private static void computePairs(AlgorithmType type, GraphLocations graph, int pairNums, long seed) {
+    private static void computePairs(AlgorithmType type, IndexedGraph graph, int pairNums, long seed) {
         Random r = new Random(seed);
         long startTime;
         long endTime;
@@ -81,12 +81,12 @@ public class Main {
         try {
             System.out.println("generating graph");
             InputStream input = new FileInputStream("denmark.graph.txt");
-            GraphLocations graph = new GraphLocations(input);
+            IndexedGraph graph = new LocationGraph(input);
             System.out.println("finished generating graph");
             System.out.println("benchmarking simple");
-            //computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 100, DEFAULT_SEED);
-            //System.out.println("Benchmarking early stop");
-            //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 100, DEFAULT_SEED);
+            computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 100, DEFAULT_SEED);
+            System.out.println("Benchmarking early stop");
+            computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 100, DEFAULT_SEED);
             System.out.println("Benchmarking bidirectional");
             computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
         } catch (IOException e) {

@@ -74,7 +74,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
                 break;
             }
             settled[u] = true;
-                for (DirectedEdge e : G.getEdges(u)) { //Maybe refactor this
+                for (DirectedEdge e : G.edgesTo(u)) { //Maybe refactor this
                     //relaxes from either side depending on which had lowest min-value in pq
                     if(currentPq == pqL) {
                         relax(e, dijkstraL);
