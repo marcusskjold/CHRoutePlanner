@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
-import java.util.stream.IntStream;
 
 public class Main {
 
@@ -16,6 +15,7 @@ public class Main {
         SIMPLEDIJKSTRA,
         EARLYSTOPDIJKSTRA,
         BIDIJKSTRA,
+        BIDIRECTIONALDIJKSTRA,
         CONTRACTIONHIERARCHIES
     }
 
@@ -31,6 +31,8 @@ public class Main {
                 return new DijkstraEarlyStop(graph);
             case BIDIJKSTRA:
                 return new DijkstraBi(graph);
+            case BIDIRECTIONALDIJKSTRA:
+                return new DijkstraBidirectional(graph);
             default:
                 throw ILLEGALALGORITHM;
         }

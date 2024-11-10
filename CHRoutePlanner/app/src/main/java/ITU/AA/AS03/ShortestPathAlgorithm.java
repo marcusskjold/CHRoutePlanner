@@ -11,18 +11,12 @@ interface ShortestPathAlgorithm {
      */
     boolean calculate(int source, int target); 
     
-    /** 
-     * @return the number of edges relaxed for the query.
-     */
+    /** @return the number of edges relaxed for the query. */
     int relaxedEdges();
 
-    /**
-     * @return the total distance cost of shortest path.
-     */
+    /** @return the total distance cost of shortest path. */
     int distance();
 
-    /**
-     * @return A path of edges that constitutes a shortest path.
-     */
+    /** @return A path of edges that constitutes a shortest path. */
     Iterable<DirectedEdge> retrievePath();
 }

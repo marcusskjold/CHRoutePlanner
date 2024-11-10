@@ -3,8 +3,16 @@ package ITU.AA.AS03;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * DijkstraBi
+// TODO: Found a major source of errors in our implementation.
+//       The indexed graph makes no guarantees of being bidirectial,
+//       but the algorithm assumes.
+//       I propose to make implementation be able to work with any kind of
+//       graph, by calling on the inverse of the graph for the lest side dijkstra.
+//       To accomodate this, the graph object should be an interface.
+
+
+/** DijkstraBi
+ * 
  */
 public class DijkstraBi implements ShortestPathAlgorithm {
 
