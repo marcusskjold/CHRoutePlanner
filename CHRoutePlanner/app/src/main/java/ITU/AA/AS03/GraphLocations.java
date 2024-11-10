@@ -3,7 +3,6 @@ package ITU.AA.AS03;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -17,9 +16,6 @@ public class GraphLocations {
     private long[] ids;
     private float[][] locs;
     private WeightedDiGraph G;
-    // PLAN: Split up the graph so there is a minimal class containing the graph itself,
-    //       then locations and id can live in the wrapper class.
-    //       This will make it much easier to e.g. have an inverted graph.
 
     public GraphLocations(int maxSize) {
         G = new WeightedDiGraph(maxSize);
@@ -95,19 +91,19 @@ public class GraphLocations {
         G.addDirectedEdge(u, v, w);
     }
 
-    public int getIndex(long id) { return idTranslator.get(id); }
+    public int getIndex(long id)                   { return idTranslator.get(id); }
 
     public List<DirectedEdge> edgesFrom(int index) { return G.edgesFrom(index); }
 
     public List<DirectedEdge> edgesTo(int index)   { return G.edgesTo(index); }
 
-    public float[] getLocation(int index) { return locs[index]; }
+    public float[] getLocation(int index)          { return locs[index]; }
 
-    public long getID(int index) { return ids[index]; }
+    public long getID(int index)                   { return ids[index]; }
 
-    public int V() { return G.V(); }
+    public int V()                                 { return G.V(); }
 
-    public int E() { return G.E(); }
+    public int E()                                 { return G.E(); }
 
     // ===========================
     

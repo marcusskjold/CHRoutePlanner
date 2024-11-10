@@ -35,6 +35,7 @@ public class DijkstraBiTest {
     LinkedList<DirectedEdge> multiplePathTwo;
 
     // Errors
+    GraphLocations directedGraph;
     GraphLocations noNodeGraph;
     TestData noCalculation;
     TestData noEdges;
@@ -48,6 +49,7 @@ public class DijkstraBiTest {
     TestData sourcesFar;
     TestData multiplePaths;
     TestData containsZeroWeights;
+    TestData falseShortestPath;
 
     @Nested
     class TestData {
@@ -140,6 +142,33 @@ public class DijkstraBiTest {
         multiplePaths.relaxedEdges = 5;
         multiplePaths.distance = 20;
 
+        // Directional issues
+        directedGraph = new GraphLocations(4);
+        directedGraph.addDirectedEdge(0, 1, 10);
+        directedGraph.addDirectedEdge(1, 2, 10);
+        directedGraph.addDirectedEdge(3, 2, 10);
+
+        // Bidirectional search specific test
+        GraphLocations falseShortestPathGraph = new GraphLocations(6);
+        falseShortestPathGraph.addUndirectedEdge(0, 1, 30);
+        falseShortestPathGraph.addUndirectedEdge(0, 2, 10);
+
+        falseShortestPathGraph.addUndirectedEdge(3, 4, 30); // To keep the naming of target consistent
+        falseShortestPathGraph.addUndirectedEdge(3, 5, 10);
+
+        falseShortestPathGraph.addUndirectedEdge(1, 4, 10);
+        falseShortestPathGraph.addUndirectedEdge(2, 5, 40);
+        falseShortestPath = new TestData();
+        falseShortestPath.graph = falseShortestPathGraph;
+        falseShortestPath.distance = 60;
+        falseShortestPath.relaxedEdges = 8;
+        LinkedList<DirectedEdge> trueShortestPath = new LinkedList<>();
+        trueShortestPath.add(new DirectedEdge(0, 2, 10));
+        trueShortestPath.add(new DirectedEdge(2, 5, 40));
+        trueShortestPath.add(new DirectedEdge(5, 3, 10));
+        falseShortestPath.path = trueShortestPath;
+
+        
 
     }
 
@@ -156,7 +185,6 @@ public class DijkstraBiTest {
 
     //        |||| Case: graph has no nodes ||||
     //        using noNodeGraph
-
     @Test void graphContainsNoNodes_constructor_throws() {
         assertThrows(IllegalArgumentException.class, () ->
             ds = new DijkstraBi(noNodeGraph));
@@ -282,6 +310,12 @@ public class DijkstraBiTest {
         assertEquals(disconnectedNodes.relaxedEdges, ds.relaxedEdges());
     }
 
+    // |||| Case: The graph is directed and source and target both connect to a common node
+    @Test void directedGraph_calculate_returnsFalse() {
+        ds = new DijkstraBi(directedGraph);
+        assertFalse(ds.calculate(sNormal, tNormal));
+    }
+
     // ================== VALIDATION ===========================
 
     // |||| Case: Source and target are the same ||||
@@ -393,4 +427,31 @@ public class DijkstraBiTest {
         ds.calculate(sNormal, tNormal);
         assertEquals(multiplePaths.relaxedEdges, ds.relaxedEdges());
     }
+
+    // |||| Case: A graph where the two Dijkstras will first meet at a meeting point
+    //            that is not part of a shortest path ||||
+
+    @Test void falseShortestPath_calculate_returnsTrue() {
+        ds = new DijkstraBi(falseShortestPath.graph);
+        assertTrue(ds.calculate(sNormal, tNormal));
+    }
+
+    @Test void falseShortestPath_distance_returnsCorrect() {
+        ds = new DijkstraBi(falseShortestPath.graph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(falseShortestPath.distance, ds.distance());
+    }
+
+    @Test void falseShortestPath_relaxedEdges_returnsCorrect() {
+        ds = new DijkstraBi(falseShortestPath.graph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(falseShortestPath.relaxedEdges, ds.relaxedEdges());
+    }
+
+    @Test void falseShortestPath_retrievePath_returnsCorrect() {
+        ds = new DijkstraBi(falseShortestPath.graph);
+        ds.calculate(sNormal, tNormal);
+        assertEquals(falseShortestPath.path, ds.retrievePath());
+    }
+
 }

@@ -23,7 +23,7 @@ public class WeightedDiGraph {
     protected void addDirectedEdge(int u, int v, int w) {
         DirectedEdge e = new DirectedEdge(u, v, w);
         edgesFrom[u].add(e);
-        edgesTo[u]  .add(e);
+        edgesTo[v]  .add(e);
         E++;
     }
 
