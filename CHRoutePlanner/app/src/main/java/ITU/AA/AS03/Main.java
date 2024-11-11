@@ -3,13 +3,15 @@ package ITU.AA.AS03;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Main {
 
     private static final long DEFAULT_SEED = 4263372046854775800L;
-    private static final IllegalArgumentException ILLEGALALGORITHM = new IllegalArgumentException(
-        "First argument must be one of: " + AlgorithmType.values());
+    private static final IllegalArgumentException ILLEGALALGORITHM =
+        new IllegalArgumentException("First argument must be one of: " + 
+            Arrays.asList(AlgorithmType.values()));
 
     enum AlgorithmType {
         SIMPLEDIJKSTRA,
@@ -19,20 +21,18 @@ public class Main {
         CONTRACTIONHIERARCHIES
     }
 
-   
-
     //Helper method to create new instance of the provided algorithmtype
     //on the provided graph
     private static ShortestPathAlgorithm createAlgorithm(AlgorithmType type, IndexedGraph graph) {
         switch(type) {
-            //case SIMPLEDIJKSTRA:
-            //    return new DijkstraSimple(graph);
-            //case EARLYSTOPDIJKSTRA:
-            //    return new DijkstraEarlyStop(graph);
+            case SIMPLEDIJKSTRA:
+                return new DijkstraSimple(graph);
+            case EARLYSTOPDIJKSTRA:
+                return new DijkstraEarlyStop(graph);
             case BIDIJKSTRA:
                 return new DijkstraBi(graph);
-            //case BIDIRECTIONALDIJKSTRA:
-            //    return new DijkstraBidirectional(graph);
+            case BIDIRECTIONALDIJKSTRA:
+                return new DijkstraBidirectional(graph);
             default:
                 throw ILLEGALALGORITHM;
         }
@@ -89,6 +89,8 @@ public class Main {
             computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 100, DEFAULT_SEED);
             System.out.println("Benchmarking bidirectional");
             computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
+            System.out.println("Benchmarking bidirectional (old)");
+            computePairs(AlgorithmType.BIDIRECTIONALDIJKSTRA, graph, 100, DEFAULT_SEED);
         } catch (IOException e) {
             e.printStackTrace();
         }
