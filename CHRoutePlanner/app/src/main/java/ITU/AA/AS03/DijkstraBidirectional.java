@@ -4,10 +4,10 @@ import java.util.Stack;
 
 public class DijkstraBidirectional implements ShortestPathAlgorithm{
 
-    protected IndexedGraph G;
+    private IndexedGraph G;
     private int V;
     private boolean ready;
-    private DijkstraSimple dijkstraL; //Maintaining two dijkstra (simple rather than earlystop since bidijkstra guarantees early stop (target already settled by othe dijkstra))
+    private DijkstraSimple dijkstraL; 
     private DijkstraSimple dijkstraR;
     private int d; //shortest path distance
     protected boolean[] settled; //Array to keep track of visited nodes (by either end)
@@ -74,7 +74,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm{
                 break;
             }
             settled[u] = true;
-                for (DirectedEdge e : G.edgesTo(u)) { //Maybe refactor this
+                for (DirectedEdge e : G.edgesFrom(u)) { //Maybe refactor this
                     //relaxes from either side depending on which had lowest min-value in pq
                     if(currentPq == pqL) {
                         relax(e, dijkstraL);
