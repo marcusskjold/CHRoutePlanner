@@ -18,7 +18,9 @@ public class Contraction {
     private int[] rank; //field for maintaining ranks (maybe not needed or maybe Node class preferred)
     private IndexedGraph graph;
     private IndexMinPQ<Integer> nodeHierarchy;
-    private DijkstraSimple dijkstra; 
+    private LocalDijkstra ld;
+    private int shortcuts;
+    //private DijkstraSimple dijkstra; 
 
     public Contraction(IndexedGraph graph) {
         int V= graph.V();
@@ -26,42 +28,134 @@ public class Contraction {
         rank = new int[V];
         this.graph = graph;
         nodeHierarchy = new IndexMinPQ<>(V);
-        dijkstra = new DijkstraSimple(graph);
+        ld = new LocalDijkstra(graph);
+        shortcuts = 0;
+        //dijkstra = new DijkstraSimple(graph);
         
     }
 
-    public void contract(int v) {
+    //Unsafe helper for now
+    public IndexMinPQ<Integer> getHierarchy() {
+        return nodeHierarchy;
+    }
+
+
+    //public void contract(int v) {
+    //    //int shortcutCount = 0;
+    //    contracted[v] = true;
+    //    
     //    //First find max weight path from an edge u to an edge w through v:
-    //    List<DirectedEdge> edges = graph.getEdges(v);
+    //    List<DirectedEdge> edges = graph.edgesFrom(v);
     //    int size = edges.size();
+    //    //boolean[] witness = new boolean[size]; -> array to avoid duplicate shortcuts -> might not be necessary due to iteration order
     //    int maxDist = 0;
     //    for(int i=0;i<size-1;i++) {
     //        DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
-//
-    //        for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
-    //            DirectedEdge from = edges.get(j); //define edge going from.
-    //            //if(to.to() == from.to()) { //Is this needed?
-    //            //    break;
-    //            //}
-    //            int pathLength = to.weight() + from.weight();
-    //            if(pathLength > maxDist) {
-    //                maxDist = pathLength;
-    //            }
-    //        }
-    //        //check for witness path from a node in U to a node in W exists
-    //        List<DirectedEdge> altEdges = graph.getEdges(to.to() );
-    //        for (DirectedEdge directedEdge : altEdges) {
-    //            if(edges.contains(directedEdge.to())) {
-    //                if(directedEdge.weight() < ) {
-    //                    // (Maybe max don't have to be found, and rather one could try to
-    //                    // just look for other shortest paths)
+    //        assert(to.to()==v);
+    //        if(!contracted[to.from()]){
+    //            for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
+    //                DirectedEdge from = edges.get(j); //define edge going from.
+    //                //if(to.to() == from.to()) { //Is this needed?
+    //                //    break;
+    //                //}
+    //                int pathLength = to.weight() + from.weight();
+    //                if(pathLength > maxDist) {
+    //                    maxDist = pathLength;
     //                }
     //            }
-    //            
     //        }
 //
-    //    
+//
+    //        ////check for witness path from a node in U to a node in W exists
+    //        //List<DirectedEdge> altEdges = graph.getEdges(to.to() );
+    //        //for (DirectedEdge directedEdge : altEdges) {
+    //        //    if(edges.contains(directedEdge.to())) {
+    //        //        if(directedEdge.weight() < ) {
+    //        //            // (Maybe max don't have to be found, and rather one could try to
+    //        //            // just look for other shortest paths)
+    //        //        }
+    //        //    }
+    //        //    
+    //        //}
+//
     //    }
+    //    for(int i= 0; i <size-1;i++) {
+    //        ld.localSearch(i, 50, maxDist, v);
+    //        //witness[i] = true;
+    //        for(int j= i+1; j< size; j++ ) {
+    //            //TODO: Maybe test if they are equal (in case of parallel edges?)
+    //            //if(!witness[j]) {
+    //            //If it reached the given node in the local search on subset, and it is shorter:
+    //                if(ld.reached(j) && ld.distance(j) > edges.get(i).weight() + edges.get(j).weight()) {
+    //                    //add shortcut or count for shortcut:
+    //                    shortcuts++;
+    //
+    //                }
+    //            //}
+    //        }
+    //    }
+    //    //The edge-difference is counted
+    //    order = Math.abs(size - shortcutCount);
+    //    
+    //}
+
+    public int computeOrder(int v, IndexedGraph graph) {
+        int order = 0;
+        int shortcutCount = 0;
+        //LocalDijkstra ld = new LocalDijkstra(graph);
+        
+        //First find max weight path from an edge u to an edge w through v:
+        List<DirectedEdge> edges = graph.edgesTo(v);
+        int size = edges.size();
+        //boolean[] witness = new boolean[size]; -> array to avoid duplicate shortcuts -> might not be necessary due to iteration order
+        int maxDist = 0;
+        for(int i=0;i<size-1;i++) {
+            DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
+            
+            for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
+                DirectedEdge from = edges.get(j); //define edge going from.
+                //if(to.to() == from.to()) { //Is this needed?
+                //    break;
+                //}
+                int pathLength = to.weight() + from.weight();
+                if(pathLength > maxDist) {
+                    maxDist = pathLength;
+                }
+            }
+
+
+            ////check for witness path from a node in U to a node in W exists
+            //List<DirectedEdge> altEdges = graph.getEdges(to.to() );
+            //for (DirectedEdge directedEdge : altEdges) {
+            //    if(edges.contains(directedEdge.to())) {
+            //        if(directedEdge.weight() < ) {
+            //            // (Maybe max don't have to be found, and rather one could try to
+            //            // just look for other shortest paths)
+            //        }
+            //    }
+            //    
+            //}
+
+        }
+
+        for(int i= 0; i <size-1;i++) {
+            ld.localSearch(i, 50, maxDist, v);
+            //witness[i] = true;
+            for(int j= i+1; j< size; j++ ) {
+                //TODO: Maybe test if they are equal (in case of parallel edges?)
+                //if(!witness[j]) {
+                //If it reached the given node in the local search on subset, and it is shorter:
+                    if(ld.reached(j) && ld.distance(j) > edges.get(i).weight() + edges.get(j).weight()) {
+                        //add shortcut or count for shortcut:
+                        shortcutCount++;
+    
+                    }
+                //}
+            }
+        }
+        //The edge-difference is counted
+        order = Math.abs(size - shortcutCount);
+        return order;
     }
 
     /*Contraction plan
@@ -84,39 +178,36 @@ public class Contraction {
 
 
     //
-    private int computeOrder(int v, IndexedGraph graph) {
-        int order = 0;
-        //Maybe initialize distTo to inf with BFS with depth equal to number of nodes to be relaxed.
+   
 
-        return order;
-    }
-
-     public IndexedGraph preProcess(IndexedGraph graph) {
+     public IndexedGraph preProcess() {
+        //LocalDijkstra ld = new LocalDijkstra(graph);
         IndexedGraph contractedGraph = graph;
         //First order the nodes
         //maybe not all nodes need to be ordered here, or at least at once?
         for(int i=0;i< graph.V();i++) {
+            System.out.println("ranking node no: " + i);
             nodeHierarchy.insert(i, computeOrder(i, graph)); //Order could also be a collection that is filled before (different options)
         }
 
-        //Go through the ordered notes
-        while(!nodeHierarchy.isEmpty()) {
-            //get the minimum element of the queue (continue lazy evaluating till viable)
-            int next;
-            do {
-            next = nodeHierarchy.minIndex();
-            nodeHierarchy.changeKey(next, computeOrder(next, graph));
-            } while (nodeHierarchy.minIndex()!=next);
-            //contract the node
-            next = nodeHierarchy.delMin();
-            contract(next); //Maybe should also take graph as input
-            //order the neighbors
-            for (DirectedEdge e : graph.edgesTo(next)) { //Need to be all neighbors (maybe method like 'getNeighbors')
-                computeOrder(e.from(), graph); //Just needs to be the other point
-            }
-            //TODO (implement contract): 
-        }
-
+//        //Go through the ordered notes
+//        while(!nodeHierarchy.isEmpty()) {
+//            //get the minimum element of the queue (continue lazy evaluating till viable)
+//            int next;
+//            do {
+//            next = nodeHierarchy.minIndex();
+//            nodeHierarchy.changeKey(next, computeOrder(next, graph));
+//            } while (nodeHierarchy.minIndex()!=next);
+//            //contract the node
+//            next = nodeHierarchy.delMin();
+//            contract(next); //Maybe should also take graph as input
+//            //order the neighbors
+//            for (DirectedEdge e : graph.edgesTo(next)) { //Need to be all neighbors (maybe method like 'getNeighbors')
+//                computeOrder(e.from(), graph); //Just needs to be the other point
+//            }
+//            //TODO: (implement contract): 
+//        }
+//
 
         return contractedGraph;
 

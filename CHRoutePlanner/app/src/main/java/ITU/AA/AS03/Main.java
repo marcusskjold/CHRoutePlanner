@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Random;
 
 public class Main {
@@ -83,14 +84,24 @@ public class Main {
             InputStream input = new FileInputStream("denmark.graph.txt");
             IndexedGraph graph = new LocationGraph(input);
             System.out.println("finished generating graph");
-            System.out.println("benchmarking simple");
-            computePairs(AlgorithmType.SIMPLEDIJKSTRA,       graph, 100, DEFAULT_SEED);
-            System.out.println("Benchmarking early stop");
-            computePairs(AlgorithmType.EARLYSTOPDIJKSTRA,    graph, 100, DEFAULT_SEED);
-            System.out.println("Benchmarking bidirectional");
-            computePairs(AlgorithmType.BIDIJKSTRA,           graph, 100, DEFAULT_SEED);
-            System.out.println("Benchmarking interleaving dijkstra");
-            computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, graph, 100, DEFAULT_SEED);
+            //System.out.println("benchmarking simple");
+            //computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 100, DEFAULT_SEED);
+            //System.out.println("Benchmarking early stop");
+            //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 100, DEFAULT_SEED);
+            //System.out.println("Benchmarking bidirectional");
+            //computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
+            //System.out.println("Benchmarking bidirectional (old)");
+            //computePairs(AlgorithmType.BIDIRECTIONALDIJKSTRA, graph, 100, DEFAULT_SEED);
+            System.out.println("ranking nodes:");
+            Contraction c = new Contraction(graph);
+            c.preProcess();
+            IndexMinPQ<Integer> hierarchy = c.getHierarchy();
+            HashSet<Integer> set = new HashSet<>();
+            for(int i=0;i<hierarchy.size();i++) {
+                set.add(hierarchy.keyOf(i));
+                System.out.println(hierarchy.keyOf(i));
+            }
+            System.out.println(set.size());
         } catch (IOException e) {
             e.printStackTrace();
         }

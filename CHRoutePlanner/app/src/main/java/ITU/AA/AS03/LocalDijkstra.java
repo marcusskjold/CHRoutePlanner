@@ -9,6 +9,9 @@ public class LocalDijkstra {
     private int V;
     private int settledCount;
 
+    
+
+
     public LocalDijkstra(IndexedGraph graph) {
         //TODO:
         G= graph;
@@ -22,11 +25,17 @@ public class LocalDijkstra {
         
     }
 
+    //For debugging purposes
+    public int getSettledCount() {
+        return settledCount;
+    }
 
     /*Performs local dijkstra search from given source node until having settled nodes equivalent
      * to provided settle-limit (or V)
+     * We also set a limit to search for
+     * Also the contracted node is ignored (TODO: maybe a whole array for contracted nodes in general would be useful)
     */
-    public void localSearch(int source, int settleLimit) {
+    public void localSearch(int source, int settleLimit, int distLimit, int ignored) {
     //TODO: Implement
         //increment the search count:
         searchCount ++;
@@ -35,15 +44,22 @@ public class LocalDijkstra {
         //Initialize the dijkstra search
         searchGen[source] = searchCount;
         distTo[source] = 0;
-        pq.insert(source, distTo[source]);
+        if(pq.contains(source)) {
+            pq.changeKey(source, distTo[source]);
+        } else {pq.insert(source, distTo[source]);}
         
-        while(!pq.isEmpty() || settledCount<settleLimit) {
+        while(!pq.isEmpty() && settledCount<settleLimit) {
             int node = pq.delMin();
+            settledCount++;
+            //If we settle node greater than the max distance shortest distance through v, return
+            if(distTo[node] > distLimit) {
+                break;
+            }
+            
 
             for (DirectedEdge e : G.edgesFrom(node)){
-                relax(e);
+                relax(e, ignored);
             }
-            settledCount++; //TODO: place this in loop
         }
 
        
@@ -52,10 +68,23 @@ public class LocalDijkstra {
         //TODO: Maybe return an edgedifference?
     }
 
+    //returns whether node v was reached in this search (TODO: do we need settled, rather)
+    public boolean reached(int v) {
+        return searchGen[v] == searchCount;
+    }
+
+    //Returns distance to target node
+    public int distance(int target) {
+        return distTo[target];
+    }
    
 
-    protected void relax(DirectedEdge e) {
+    protected void relax(DirectedEdge e, int ignored) {
         int v = e.from(), w = e.to();
+        //If current edge goes to contracted node, we ignore it
+        if(w == ignored) {
+            return;
+        }
         int newDist = distTo[v] + e.weight();
         if (newDist < distTo[v])
             throw new ArithmeticException("Integer overflow: Distances are too high");
@@ -64,18 +93,16 @@ public class LocalDijkstra {
         if(searchGen[w] < searchCount) {
             distTo[w] = newDist;
             searchGen[w] = searchCount;
-            pq.insert(w, newDist);
         }
         else if(distTo[w] > newDist) {
             distTo[w] = newDist;
-            if (pq.contains(w)) pq.decreaseKey(w, newDist);
-            else                pq.insert(w, newDist);
         } else {
             return;
-        }
-        settledCount++;
-        
-        
+        } 
+        if (pq.contains(w)) pq.changeKey(w, newDist);
+        else                pq.insert(w, newDist);
+
+
     }
 
 
