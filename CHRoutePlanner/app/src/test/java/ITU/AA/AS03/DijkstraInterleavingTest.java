@@ -19,9 +19,9 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
  * DijkstraSimpleTest
  */
 @TestInstance(Lifecycle.PER_CLASS)
-public class DijkstraBiTest {
+public class DijkstraInterleavingTest {
 
-    DijkstraBi ds;
+    DijkstraInterleaving ds;
 
     IndexedGraph smallGraph;
     IndexedGraph tooFarApartGraph;
@@ -122,7 +122,7 @@ public class DijkstraBiTest {
         zeroWeightPath.add(new DirectedEdge(2, 3, 10));
         containsZeroWeights.path = zeroWeightPath;
         containsZeroWeights.distance = 10;
-        containsZeroWeights.relaxedEdges = 5;
+        containsZeroWeights.relaxedEdges = 6;
 
         // Multiple shortest paths
         IndexedGraph multiplePathGraph = new WeightedDiGraph(4);
@@ -187,19 +187,19 @@ public class DijkstraBiTest {
     //        using noNodeGraph
     @Test void graphContainsNoNodes_constructor_throws() {
         assertThrows(IllegalArgumentException.class, () ->
-            ds = new DijkstraBi(noNodeGraph));
+            ds = new DijkstraInterleaving(noNodeGraph));
     }
 
     //         |||| Case: graph is null ||||
     @Test void null_constructor_throws() {
         assertThrows(IllegalArgumentException.class, () ->
-            ds = new DijkstraBi(null));
+            ds = new DijkstraInterleaving(null));
     }
 
     //     |||| Case: attempt to calculate twice ||||
     //          uses smallGraph
     @Test void calculateTwice_calculate_throws() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         ds.calculate(sNormal, tNormal);
         assertThrows(IllegalStateException.class, () ->
             ds.calculate(sNormal, tNormal));
@@ -207,25 +207,25 @@ public class DijkstraBiTest {
 
     //     |||| Case: calculate with bad arguments ||||
     @Test void sourceTooHigh_calculate_throws() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         assertThrows(IllegalArgumentException.class, () ->
             ds.calculate(tooHigh, tNormal));
     }
 
     @Test void sourceTooLow_calculate_throws() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         assertThrows(IllegalArgumentException.class, () ->
             ds.calculate(tooLow, tNormal));
     }
 
     @Test void targetTooHigh_calculate_throws() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         assertThrows(IllegalArgumentException.class, () ->
             ds.calculate(sNormal, tooHigh));
     }
 
     @Test void targetTooLow_calculate_throws() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         assertThrows(IllegalArgumentException.class, () ->
             ds.calculate(sNormal, tooLow));
     }
@@ -233,7 +233,7 @@ public class DijkstraBiTest {
     // |||| Case: source and target are too far apart
 
     @Test void nodesTooFarApart_calculate_throws() {
-        ds = new DijkstraBi(tooFarApartGraph);
+        ds = new DijkstraInterleaving(tooFarApartGraph);
         assertThrows(ArithmeticException.class, () ->
             ds.calculate(sNormal, tNormal));
     }
@@ -244,17 +244,17 @@ public class DijkstraBiTest {
     //           uses noCalculation test data
 
     @Test void noCalculation_distance_returnsErrorCode() {
-        ds = new DijkstraBi(noCalculation.graph);
+        ds = new DijkstraInterleaving(noCalculation.graph);
         assertEquals(-1, ds.distance());
     }
 
     @Test void noCalculation_retrievePath_returnsNull() {
-        ds = new DijkstraBi(noCalculation.graph);
+        ds = new DijkstraInterleaving(noCalculation.graph);
         assertEquals(null, ds.retrievePath());
     }
 
     @Test void noCalcultion_relaxedEdges_returnMinusOne() {
-        ds = new DijkstraBi(noCalculation.graph);
+        ds = new DijkstraInterleaving(noCalculation.graph);
         assertEquals(-1, ds.relaxedEdges());
     }
 
@@ -262,25 +262,25 @@ public class DijkstraBiTest {
     //                uses noEdges
 
     @Test void graphContainsNoEdges_calculate_returnsFalse() {
-        ds = new DijkstraBi(noEdges.graph);
+        ds = new DijkstraInterleaving(noEdges.graph);
         assertFalse(ds.calculate(sNormal, tNormal));
     }
 
     @Test void graphContainsNoEdges_distance_returnsMAX() {
-        ds = new DijkstraBi(noEdges.graph);
+        ds = new DijkstraInterleaving(noEdges.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(Integer.MAX_VALUE, ds.distance());
     }
 
     @Test void graphContainsNoEdges_retrievePath_returnsNull() {
-        ds = new DijkstraBi(noEdges.graph);
+        ds = new DijkstraInterleaving(noEdges.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(null, ds.retrievePath());
 
     }
 
     @Test void graphContainsNoEdges_relaxedEdges_returnsZero() {
-        ds = new DijkstraBi(noEdges.graph);
+        ds = new DijkstraInterleaving(noEdges.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(0, ds.relaxedEdges());
     }
@@ -288,31 +288,31 @@ public class DijkstraBiTest {
     // |||| Case: Graph is not connected and source is disconnected from target ||||
     //            Uses disconnectedNodes
     @Test void nodesDisconnected_calculate_returnFalse() {
-        ds = new DijkstraBi(disconnectedNodes.graph);
+        ds = new DijkstraInterleaving(disconnectedNodes.graph);
         assertFalse(ds.calculate(sNormal, tNormal));
     }
 
     @Test void nodesDisconnected_distance_returnMAX() {
-        ds = new DijkstraBi(disconnectedNodes.graph);
+        ds = new DijkstraInterleaving(disconnectedNodes.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(Integer.MAX_VALUE, ds.distance());
     }
 
     @Test void nodesDisconnected_retrievePath_returnNull() {
-        ds = new DijkstraBi(disconnectedNodes.graph);
+        ds = new DijkstraInterleaving(disconnectedNodes.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(null, ds.retrievePath());
     }
 
     @Test void nodesDisconnected_relaxedEdges_returnCorrect() {
-        ds = new DijkstraBi(disconnectedNodes.graph);
+        ds = new DijkstraInterleaving(disconnectedNodes.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(disconnectedNodes.relaxedEdges, ds.relaxedEdges());
     }
 
     // |||| Case: The graph is directed and source and target both connect to a common node
     @Test void directedGraph_calculate_returnsFalse() {
-        ds = new DijkstraBi(directedGraph);
+        ds = new DijkstraInterleaving(directedGraph);
         assertFalse(ds.calculate(sNormal, tNormal));
     }
 
@@ -322,24 +322,24 @@ public class DijkstraBiTest {
     //            Uses nodesEqual
 
     @Test void nodesEqual_calculate_returnsTrue() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         assertTrue(ds.calculate(sNormal, sNormal));
     }
 
     @Test void nodesEqual_distance_returnsZero() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         ds.calculate(sNormal, sNormal);
         assertEquals(0, ds.distance());
     }
 
     @Test void nodesEqual_retrievePath_returnsEmptyList() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         ds.calculate(sNormal, sNormal);
         assertEquals(new LinkedList<DirectedEdge>(), ds.retrievePath());
     }
 
     @Test void nodesEqual_relaxedEdges_returnsCorrect() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         ds.calculate(sNormal, sNormal);
         assertEquals(0, ds.relaxedEdges());
 
@@ -348,24 +348,24 @@ public class DijkstraBiTest {
     // |||| Case: source and target are adjacent ||||
 
     @Test void targetClose_calculate_returnsTrue() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         assertTrue(ds.calculate(sNormal, tClose));
     }
 
     @Test void targetClose_distance_returnsCorrect() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         ds.calculate(sNormal, tClose);
         assertEquals(targetClose.distance, ds.distance());
     }
 
     @Test void targetClose_retrievePath_returnsCorrect() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         ds.calculate(sNormal, tClose);
         assertEquals(targetClose.path, ds.retrievePath());
     }
 
     @Test void targetClose_relaxedEdge_returnsCorrect() {
-        ds = new DijkstraBi(smallGraph);
+        ds = new DijkstraInterleaving(smallGraph);
         ds.calculate(sNormal, tClose);
         assertEquals(targetClose.relaxedEdges, ds.relaxedEdges());
     }
@@ -373,25 +373,25 @@ public class DijkstraBiTest {
     // |||| Case: Shortest path contains edges with 0 weight |||| 
 
     @Test void containsZeroWeight_calculate_returnsTrue() {
-        ds = new DijkstraBi(containsZeroWeights.graph);
+        ds = new DijkstraInterleaving(containsZeroWeights.graph);
         assertTrue(ds.calculate(sNormal, tNormal));
 
     }
 
     @Test void containsZeroWeight_distance_returnsCorrect() {
-        ds = new DijkstraBi(containsZeroWeights.graph);
+        ds = new DijkstraInterleaving(containsZeroWeights.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(containsZeroWeights.distance, ds.distance());
     }
 
     @Test void containsZeroWeight_retrievePath_returnsCorrect() {
-        ds = new DijkstraBi(containsZeroWeights.graph);
+        ds = new DijkstraInterleaving(containsZeroWeights.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(containsZeroWeights.path, ds.retrievePath());
     }
 
     @Test void containsZeroWeight_relaxedEdges_returnsCorrect() {
-        ds = new DijkstraBi(containsZeroWeights.graph);
+        ds = new DijkstraInterleaving(containsZeroWeights.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(containsZeroWeights.relaxedEdges, ds.relaxedEdges());
     }
@@ -399,18 +399,18 @@ public class DijkstraBiTest {
     // |||| Case: There are multiple shortest paths ||||
 
     @Test void multiplePaths_calculate_returnsTrue() {
-        ds = new DijkstraBi(multiplePaths.graph);
+        ds = new DijkstraInterleaving(multiplePaths.graph);
         assertTrue(ds.calculate(sNormal, tNormal));
     }
 
     @Test void multiplePaths_distance_returnsCorrect() {
-        ds = new DijkstraBi(multiplePaths.graph);
+        ds = new DijkstraInterleaving(multiplePaths.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(multiplePaths.distance, ds.distance());
     }
 
     @Test void multiplePaths_retrievePath_returnsEitherCorrect() {
-        ds = new DijkstraBi(multiplePaths.graph);
+        ds = new DijkstraInterleaving(multiplePaths.graph);
         ds.calculate(sNormal, tNormal);
         
         boolean isEither = (
@@ -423,7 +423,7 @@ public class DijkstraBiTest {
     }
 
     @Test void multiplePaths_relaxedEdges_returnsCorrect() {
-        ds = new DijkstraBi(multiplePaths.graph);
+        ds = new DijkstraInterleaving(multiplePaths.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(multiplePaths.relaxedEdges, ds.relaxedEdges());
     }
@@ -432,24 +432,24 @@ public class DijkstraBiTest {
     //            that is not part of a shortest path ||||
 
     @Test void falseShortestPath_calculate_returnsTrue() {
-        ds = new DijkstraBi(falseShortestPath.graph);
+        ds = new DijkstraInterleaving(falseShortestPath.graph);
         assertTrue(ds.calculate(sNormal, tNormal));
     }
 
     @Test void falseShortestPath_distance_returnsCorrect() {
-        ds = new DijkstraBi(falseShortestPath.graph);
+        ds = new DijkstraInterleaving(falseShortestPath.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(falseShortestPath.distance, ds.distance());
     }
 
     @Test void falseShortestPath_relaxedEdges_returnsCorrect() {
-        ds = new DijkstraBi(falseShortestPath.graph);
+        ds = new DijkstraInterleaving(falseShortestPath.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(falseShortestPath.relaxedEdges, ds.relaxedEdges());
     }
 
     @Test void falseShortestPath_retrievePath_returnsCorrect() {
-        ds = new DijkstraBi(falseShortestPath.graph);
+        ds = new DijkstraInterleaving(falseShortestPath.graph);
         ds.calculate(sNormal, tNormal);
         assertEquals(falseShortestPath.path, ds.retrievePath());
     }

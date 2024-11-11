@@ -19,6 +19,7 @@ public class LocationGraph implements IndexedGraph {
 
     /** Initializes graph with no edges */
     public LocationGraph(int maxSize, long[] ids, float[][] locations) {
+        G = new WeightedDiGraph(maxSize);
         if (ids.length != maxSize)
             throw new IllegalArgumentException("maxSize and number of ids differ");
         if (locations.length != maxSize)
@@ -34,7 +35,6 @@ public class LocationGraph implements IndexedGraph {
 
         this.locs = locations;
         this.ids = ids;
-        G = new WeightedDiGraph(maxSize);
     }
 
     /** Generate undirected graph from input stream.
@@ -86,6 +86,8 @@ public class LocationGraph implements IndexedGraph {
     public float[] getLocation(int index)                    { return locs[index]; }
 
     public long getID(int index)                             { return ids[index]; }
+
+    public void addDirectedEdge(DirectedEdge e)              { G.addDirectedEdge(e); }
 
     @Override public List<DirectedEdge> edgesFrom(int index) { return G.edgesFrom(index); }
 

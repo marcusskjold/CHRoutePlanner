@@ -10,6 +10,7 @@ public class WeightedDiGraph implements IndexedGraph {
     private List<DirectedEdge>[] edgesTo;
 
     public WeightedDiGraph(int V) {
+        if (V < 0) throw new IllegalArgumentException("Graph cannot have negative size");
         edgesFrom = (LinkedList<DirectedEdge>[]) new LinkedList[V];
         edgesTo   = (LinkedList<DirectedEdge>[]) new LinkedList[V];
         for (int i = 0; i < V; i++) {
@@ -24,6 +25,13 @@ public class WeightedDiGraph implements IndexedGraph {
         DirectedEdge e = validateEdge(u, v, w);
         edgesFrom[u].add(e);
         edgesTo[v]  .add(e);
+        E++;
+    }
+
+    public void addDirectedEdge(DirectedEdge e) {
+        validateEdge(e);
+        edgesFrom[e.from()].add(e);
+        edgesTo[e.to()]  .add(e);
         E++;
     }
 
@@ -52,5 +60,9 @@ public class WeightedDiGraph implements IndexedGraph {
         if (v >= V || v < 0) throw new IllegalArgumentException("v does not correspond to a node");
         if (w < 0)           throw new IllegalArgumentException("weight is negative");
         return new DirectedEdge(u, v, w);
+    }
+
+    private void validateEdge(DirectedEdge e) {
+        validateEdge(e.from(), e.to(), e.weight());
     }
 }

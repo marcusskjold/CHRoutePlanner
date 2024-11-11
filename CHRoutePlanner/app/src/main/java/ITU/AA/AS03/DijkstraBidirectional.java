@@ -1,130 +1,156 @@
 package ITU.AA.AS03;
 
-import java.util.Stack;
+import java.util.LinkedList;
+import java.util.List;
 
-public class DijkstraBidirectional implements ShortestPathAlgorithm{
+/** DijsktraBidirectional
+ *
+ */
+public class DijkstraBidirectional implements ShortestPathAlgorithm {
 
     private IndexedGraph G;
-    private int V;
+    private Dijkstra c, r, l;
+    private int s, t, d, meetPoint, relaxes;
     private boolean ready;
-    private DijkstraSimple dijkstraL; 
-    private DijkstraSimple dijkstraR;
-    private int d; //shortest path distance
-    protected boolean[] settled; //Array to keep track of visited nodes (by either end)
-    private int meetPoint; //Point where the shortest paths meet (for path retreival)
-    
+    private boolean[] settled;
 
+    /** Initializes the algorithm for a given graph.
+     * Does not compute shortest paths.
+     * An object of this class corresponds to a single query on a graph,
+     * if multiple queries are desired, either create an instance per query,
+     * or sequentially reset the query object with reset();
+     * @param  G the edge-weighted digraph
+     * @throws if graph is null or has no nodes.
+     */
     public DijkstraBidirectional(IndexedGraph graph) {
-        ready = true; //design choice whether this should also have ready and how***
-        G= graph;
-        ////If using two dijkstras
-        dijkstraL = new DijkstraSimple(graph);
-        dijkstraR = new DijkstraSimple(graph);
-        V = graph.V();
-        //New stuff:
-        settled = new boolean[V]; //Initialize array to check whether already visited
+        if (graph == null) throw new IllegalArgumentException("Graph must not be null.");
+        int V = graph.V();
+        if (V < 1)         throw new IllegalArgumentException("Graph must contain nodes.");
+        G = graph;
+
+        r = new Dijkstra(V, false);
+        l = new Dijkstra(V, true);
+        r.opposite = l; l.opposite = r;
+        s = -1; t = -1; relaxes = -1;
         d = Integer.MAX_VALUE;
-        //initilaize meetpoint to some dummy that indicates no path found (maybe not necessary?***)
-        meetPoint = -1;
+        settled = new boolean[V];
+        ready = true;
     }
 
-
-    @Override public boolean calculate (int source, int target) {
-        ////from dijkstra simple
-        if (!ready) 
-            throw new Error("State must be reset before new calculation.");
-        if (source < 0 || source >= V)
+    /** Computes a shortest-path from the source vertex to target vertex in the graph.
+     * This mutates state.
+     * @param source the index of the source node,
+     * @param target the target node.
+     * @return if a shortest path was found
+     * @throws IllegalStateException if calculate is called multiple times.
+     * @throws IllegalArgumentException if source or target is invalid indexes in the graph
+     */
+    @Override public boolean calculate(int source, int target) {
+        if (!ready)
+            throw new IllegalStateException("State must be reset before new calculation.");
+        if (source < 0 || source >= G.V())
             throw new IllegalArgumentException("source is not a valid node index");
-        if (target < 0 || target >= V)
+        if (target < 0 || target >= G.V())
             throw new IllegalArgumentException("target is not a valid node index");
+
         ready = false;
-        //shortest distance to be returned (should maybe be a field?)***
-        d = Integer.MAX_VALUE;
-        //sets up dijkstras from either end
-        dijkstraL.setUpSearch(source, target);
-        dijkstraR.setUpSearch(target, source);
-        
+        relaxes = 0;
+        s = source; t = target;
+
+        r.distTo[s] = 0; r.reached[s] = true; r.pq.insert(s, 0);
+        l.distTo[t] = 0; l.reached[t] = true; l.pq.insert(t, 0);
+        c = r;
+
         findShortestPath();
 
-        //d used here instead
-        if (!(d < Integer.MAX_VALUE)) return false; //Make this compatible with superclass maybe, or refactor first part to make it possible?***
-        else return true;
-
+        if (d < Integer.MAX_VALUE) return true;
+        else return false;
     }
 
-    
-    protected void findShortestPath() {
-        //fetches priority-queues to compare
-        IndexMinPQ<Integer> pqL = dijkstraL.getPq();
-        IndexMinPQ<Integer> pqR = dijkstraR.getPq();
-        while (!pqL.isEmpty() || !pqR.isEmpty()) {
-                //define next node to be looked at
-                int u;
-                //makes reference for current PQ to be used in current iteration
-                IndexMinPQ<Integer> currentPq; 
-                //Choose node from left or right pq depending on order
-                //We would always go with pqR first with this model (Which seems okay?)***
-            if(pqR.isEmpty() || (!pqL.isEmpty() && (pqL.minKey() < pqR.minKey()) )) { //Lazy evaluation -> if pqR empty then pqL can't be
-                currentPq = pqL;
-            } else { //All other cases (either pqL empty or pqR.minkey() < pqL.minkey() (if second clause above false))
-                currentPq = pqR;
-            }
-            u = currentPq.delMin();
-            if (settled[u]) { //If current min settled from other direction, stop searching for shortest path (because ...)
-                break;
-            }
-            settled[u] = true;
-                for (DirectedEdge e : G.edgesFrom(u)) { //Maybe refactor this
-                    //relaxes from either side depending on which had lowest min-value in pq
-                    if(currentPq == pqL) {
-                        relax(e, dijkstraL);
-                    } else {
-                        relax(e, dijkstraR);
-                    }
-                    //Checks whether the distance to the vertex newly relaxed (or tried to relax) edge pointed to is shorter than current shortest path
-                    //If so updates shortest path
-                    int v = e.to();
-                    //get current shortest distances from dijkstras to v
-                    int distL = dijkstraL.distance(v);
-                    int distR = dijkstraR.distance(v);
-                    //First check that they have each been reached (otherwise overflow***)
-                    if(distL < Integer.MAX_VALUE && distR < Integer.MAX_VALUE) {
-                        int distCandidate = distL + distR;
-                        if(distCandidate < d) {
-                            d = distCandidate;
-                            //And update place where new shortest path meet
-                            meetPoint = v;
-                        }
-                    }
-                }
-        }
-    }
-
-    //The same except it also takes a priorityQueue
-    //Might want to change it to this way in superclass (if we want this one to inherit)***
-    //and then always use same priorityqueue there
-    protected void relax(DirectedEdge e, DijkstraSimple d) {
-        d.relax(e);
-    }
-
-    @Override
-    public int relaxedEdges() {
-        return dijkstraL.relaxedEdges() + dijkstraR.relaxedEdges();
-    }
-
-    @Override
-    public int distance() {
+    /** Returns the shortest distance between the source and target node.
+     * These must have been calculated beforehand.
+     * Does not mutate state.
+     * @return the shortest distance between source and target.
+     *         if there is no path returns {@code Integer.MAX_VALUE}.
+     *         if the path has not been calculated yet, returns {@code -1}.
+     */
+    @Override public int distance() {
+        if (t == -1) return -1;
         return d;
     }
 
+    /** Returns the number of calls to relax during calculation of shortest path */
+    @Override public int relaxedEdges() { return relaxes; }
 
-    //TODO: Implement
-    @Override
-    public Iterable<DirectedEdge> retrievePath() {
-        Iterable<DirectedEdge> pathL = dijkstraL.retrievePath(meetPoint);
-        Iterable<DirectedEdge> pathR = dijkstraR.retrievePath(meetPoint);
-        
-        //Concatenate the two paths in some way. Maybe use other structure than stack
-        return null;
+    /** Returns a shortest path from the source vertex {@code s} to vertex {@code v}.
+     * @return a shortest path from the source vertex {@code s} to vertex {@code v}
+     *         as an iterable of edges.
+     *         Returns an empty list if source and target are equal
+     *         Returns {@code null} if:
+     *          - no such path exists
+     *          - path has not been calculated yet
+     */
+    @Override public List<DirectedEdge> retrievePath() {
+        if (ready) return null;                                 // If not calculated
+        if (d == Integer.MAX_VALUE) return null;                // If not connected
+
+        LinkedList<DirectedEdge> path = new LinkedList<DirectedEdge>();
+        for ( DirectedEdge e = r.edgeTo[meetPoint]; e != null; e = r.edgeTo[e.from()]) { path.addFirst(e); }
+        for ( DirectedEdge e = l.edgeTo[meetPoint]; e != null; e = l.edgeTo[e.to()])   { path.add(e); }
+
+        return path;
     }
+
+    // =================== Private helper methods ========================
+
+    private void findShortestPath() {
+        if (s == t) { d = 0; return; }
+
+        while (true) {
+            boolean eR = (r.pq.isEmpty());
+            boolean eL = (l.pq.isEmpty());
+            if (eR && eL) return;
+
+            // Determine side
+            if (eR || (!eL && l.pq.minKey() < r.pq.minKey())) c = l;
+            else                                              c = r;
+
+            int u = c.pq.delMin();
+            if (settled[u]) return;
+
+            settled[u] = true;
+            List<DirectedEdge> edges = c.inverted ? G.edgesTo(u)
+                                                  : G.edgesFrom(u);
+            for (DirectedEdge e : edges) relax(e);
+        }
+    }
+
+    private void relax(DirectedEdge e) {
+        // Setup & early stopping
+        int u, v;
+        if (!c.inverted) { u = e.from(); v = e.to(); }
+        else             { v = e.from(); u = e.to(); }
+        int newDist  = c.distTo[u] + e.weight();
+        if (newDist >= c.distTo[v]) return;
+        if (newDist  < c.distTo[u]) throw new ArithmeticException(
+            "Integer overflow: Distances are too high");
+
+        relaxes++;
+        c.distTo[v] = newDist;
+        c.edgeTo[v] = e;
+        if (c.pq.contains(v)) c.pq.decreaseKey(v, newDist);
+        else                  c.pq.insert(v, newDist);
+        c.reached[v] = true;
+
+        if (c.opposite.reached[v]) {
+            int dCandidate = newDist + c.opposite.distTo[v];
+            if(dCandidate < d) {
+                if (dCandidate < newDist) throw new ArithmeticException(
+                    "Integer overflow: Distances are too high");
+                d = dCandidate;
+                meetPoint = v;
+            }
+        }
+    }
+
 }

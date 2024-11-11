@@ -6,32 +6,13 @@ import java.util.List;
 /** DijkstraBi
  *
  */
-public class DijkstraBi implements ShortestPathAlgorithm {
+public class DijkstraInterleaving implements ShortestPathAlgorithm {
 
     private IndexedGraph G;
-    private Dijkstra c, r, l;
+    private Dijkstra c;
     private int s, t, d, meetPoint, relaxes;
     private boolean ready;
     private boolean[] settled;
-
-    private class Dijkstra {
-        IndexMinPQ<Integer> pq;
-        int[] distTo;
-        DirectedEdge[] edgeTo;
-        boolean[] reached;
-        boolean inverted;
-        Dijkstra opposite;
-
-        Dijkstra(int V, boolean inverted) {
-            this.inverted = inverted;
-            pq = new IndexMinPQ<Integer>(V);
-            edgeTo = new DirectedEdge[V];
-            distTo = new int[V];
-            reached = new boolean[V];
-            for (int v = 0; v < V; v++)
-                distTo[v] = Integer.MAX_VALUE;
-        }
-    }
 
     /** Initializes the algorithm for a given graph.
      * Does not compute shortest paths.
@@ -41,15 +22,15 @@ public class DijkstraBi implements ShortestPathAlgorithm {
      * @param  G the edge-weighted digraph
      * @throws if graph is null or has no nodes.
      */
-    public DijkstraBi(IndexedGraph graph) {
+    public DijkstraInterleaving(IndexedGraph graph) {
         if (graph == null) throw new IllegalArgumentException("Graph must not be null.");
         int V = graph.V();
         if (V < 1)         throw new IllegalArgumentException("Graph must contain nodes.");
         G = graph;
 
-        r = new Dijkstra(V, false);
-        l = new Dijkstra(V, true);
-        r.opposite = l; l.opposite = r;
+        c = new Dijkstra(V, false);
+        c.opposite = new Dijkstra(V, true);
+        c.opposite.opposite = c;
         s = -1; t = -1; relaxes = -1;
         d = Integer.MAX_VALUE;
         settled = new boolean[V];
@@ -76,8 +57,9 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         relaxes = 0;
         s = source; t = target;
 
-        r.distTo[s] = 0; r.reached[s] = true; r.pq.insert(s, 0);
-        l.distTo[t] = 0; l.reached[t] = true; l.pq.insert(t, 0);
+        c.distTo[s] = 0;     c.opposite.distTo[t] = 0;
+        c.reached[s] = true; c.opposite.reached[t] = true;
+        c.pq.insert(s, 0);   c.opposite.pq.insert(t, 0);
 
         findShortestPath();
 
@@ -113,6 +95,8 @@ public class DijkstraBi implements ShortestPathAlgorithm {
         if (d == Integer.MAX_VALUE) return null;                // If not connected
 
         LinkedList<DirectedEdge> path = new LinkedList<DirectedEdge>();
+        Dijkstra r = c.inverted ? c.opposite : c;
+        Dijkstra l = r.opposite;
         for ( DirectedEdge e = r.edgeTo[meetPoint]; e != null; e = r.edgeTo[e.from()]) { path.addFirst(e); }
         for ( DirectedEdge e = l.edgeTo[meetPoint]; e != null; e = l.edgeTo[e.to()])   { path.add(e); }
 
@@ -124,14 +108,10 @@ public class DijkstraBi implements ShortestPathAlgorithm {
     private void findShortestPath() {
         if (s == t) { d = 0; return; }
 
-        while (true) {
-            boolean eR = (r.pq.isEmpty());
-            boolean eL = (l.pq.isEmpty());
-            if (eR && eL) return;
+        while (true){
 
-            // Determine side
-            if (eR || (!eL && l.pq.minKey() < r.pq.minKey())) c = l;
-            else                                              c = r;
+            if (!c.opposite.pq.isEmpty()) c = c.opposite;
+            else if (c.pq.isEmpty()) return;
 
             int u = c.pq.delMin();
             if (settled[u]) return;

@@ -17,7 +17,7 @@ public class Main {
         SIMPLEDIJKSTRA,
         EARLYSTOPDIJKSTRA,
         BIDIJKSTRA,
-        BIDIRECTIONALDIJKSTRA,
+        INTERLEAVINGDIJKSTRA,
         CONTRACTIONHIERARCHIES
     }
 
@@ -29,9 +29,9 @@ public class Main {
                 return new DijkstraSimple(graph);
             case EARLYSTOPDIJKSTRA:
                 return new DijkstraEarlyStop(graph);
+            case INTERLEAVINGDIJKSTRA:
+                return new DijkstraInterleaving(graph);
             case BIDIJKSTRA:
-                return new DijkstraBi(graph);
-            case BIDIRECTIONALDIJKSTRA:
                 return new DijkstraBidirectional(graph);
             default:
                 throw ILLEGALALGORITHM;
@@ -89,8 +89,8 @@ public class Main {
             computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 100, DEFAULT_SEED);
             System.out.println("Benchmarking bidirectional");
             computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
-            System.out.println("Benchmarking bidirectional (old)");
-            computePairs(AlgorithmType.BIDIRECTIONALDIJKSTRA, graph, 100, DEFAULT_SEED);
+            System.out.println("Benchmarking interleaving dijkstra");
+            computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, graph, 100, DEFAULT_SEED);
         } catch (IOException e) {
             e.printStackTrace();
         }
