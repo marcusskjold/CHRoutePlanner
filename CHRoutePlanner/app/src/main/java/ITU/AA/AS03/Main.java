@@ -84,11 +84,11 @@ public class Main {
             IndexedGraph graph = new LocationGraph(input);
             System.out.println("finished generating graph");
             System.out.println("benchmarking simple");
-            computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 100, DEFAULT_SEED);
+            computePairs(AlgorithmType.SIMPLEDIJKSTRA,       graph, 100, DEFAULT_SEED);
             System.out.println("Benchmarking early stop");
-            computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 100, DEFAULT_SEED);
+            computePairs(AlgorithmType.EARLYSTOPDIJKSTRA,    graph, 100, DEFAULT_SEED);
             System.out.println("Benchmarking bidirectional");
-            computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
+            computePairs(AlgorithmType.BIDIJKSTRA,           graph, 100, DEFAULT_SEED);
             System.out.println("Benchmarking interleaving dijkstra");
             computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, graph, 100, DEFAULT_SEED);
         } catch (IOException e) {
