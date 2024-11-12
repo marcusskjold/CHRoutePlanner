@@ -106,15 +106,14 @@ public class Main {
             cgraph.printGraph();
         } catch (IOException e) {
             e.printStackTrace();
-        //}
+        }
         //try {
         //    a = AlgorithmType.valueOf(args[0]);
-        } catch (IllegalArgumentException e) { throw ILLEGALALGORITHM; }
+        //} catch (IllegalArgumentException e) { throw ILLEGALALGORITHM; }
 
         //WeightedDiGraph G = new WeightedDiGraph(3);
         //G.addUndirectedEdge(0, 2, 3);
         //G.addUndirectedEdge(1, 2, 3);
-        //G.addUndirectedEdge(1, 0, 3);
         //ContractedGraph CG = new ContractedGraph(G);
         //CG.contract(2);
         //System.out.println(CG.shortcutCount());
