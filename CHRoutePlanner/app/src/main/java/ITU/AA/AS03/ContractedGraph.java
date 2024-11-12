@@ -1,16 +1,11 @@
 package ITU.AA.AS03;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.Vector;
 
 public class ContractedGraph implements IndexedGraph {
 
@@ -23,7 +18,8 @@ public class ContractedGraph implements IndexedGraph {
     private int shortcutCount;
     private LocalDijkstra d;
 
-    private int hopCallCount;
+    private int contractions;
+    private int bContained;
 
     public ContractedGraph(IndexedGraph G) {
         this.G               = G;
@@ -34,56 +30,98 @@ public class ContractedGraph implements IndexedGraph {
         rank                 = new int[V];
         d                    = new LocalDijkstra(G);
         shortcutCount        = 0;
-        hopCallCount = 0;
-        contract(G);
-        System.out.println("Graph contracted");
-        System.out.println("V         = " + V);
-        System.out.println("E         = " + E());
-        System.out.println("shortcuts = " + shortcutCount);
-        System.out.println("hops      = " + hopCallCount);
+        contractions         = 0;
+        bContained           = 0;
     }
 
+    public void contractGraph() {
+        contract(G);
+        System.out.println("Graph contracted");
+        System.out.println("V         = " + V());
+        System.out.println("E         = " + E());
+        System.out.println("shortcuts = " + shortcutCount);
+        System.out.println("hops      = " + contractions);
+        System.out.println("total bs contained in map " + bContained);
+    }
+
+    public int contractions()   { return contractions; }
+    public int shortcutCount()  { return shortcutCount; }
+    public void contract(int n) { oneHop(n); }
+
     public void oneHop(int c) {
-        hopCallCount++;
-        List<DirectedEdge> edges = G.edgesFrom(c);
-        System.out.println("edges is size " + edges.size());
-        int longest = 0, s = edges.size();
-        Set<Integer> neighbors = new HashSet<>(s*2, 1.0f);
-        Map<Integer, DirectedEdge> froms = 
-            new HashMap<Integer, DirectedEdge>(s*2, 1.0f);
-
-        for (DirectedEdge cb : edges) {
-            int b = cb.to();
-            neighbors.add(b);
-            if (contracted[b]) continue;
-            DirectedEdge e = froms.putIfAbsent(b, cb);
-            if (e != null && e.weight() > cb.weight()) froms.put(b, cb);
-        }
-        System.out.println("froms is length " + froms.size());
-
+        int shortcutsAdded = 0;
+        
+        contractions++;
+        System.out.println("Contraction nr. " + contractions);
+        List<DirectedEdge> cbs = G.edgesFrom(c);
+        ////System.out.println("edges is size " + edges.size());
+        int s = cbs.size();
+        Set<Integer> neighbors = new HashSet<>(s * 2, 1.0f);
+        //Map<Integer, DirectedEdge> froms = 
+        //    new HashMap<Integer, DirectedEdge>(s * 2, 1.0f);
+        //
+        //for (DirectedEdge cb : edges) {
+        //    int b = cb.to();
+        //    neighbors.add(b);
+        //    if (contracted[b]) continue;
+        //    DirectedEdge e = froms.putIfAbsent(b, cb);
+        //    if (e != null && e.weight() > cb.weight()) froms.put(b, cb);
+        //}
+        //System.out.println("froms is length " + froms.size());
+        //
         for (DirectedEdge ac : G.edgesTo(c)) {
-            int a = ac.from(), w_acb = ac.weight();
+            int a = ac.from(), w_ac = ac.weight();
+            //System.out.println("a is " + a);
             if (contracted[a]) continue;
             neighbors.add(a);
-            List<DirectedEdge> aEdges = G.edgesFrom(a);
-            for (int i = 0; i < aEdges.size(); i++) {
-                DirectedEdge ab = aEdges.get(i);
-            //for (DirectedEdge ab : G.edgesFrom(a)) {
-                int b = ab.to(), w_ab = ab.weight();
-                System.out.println("b is " + b);
-                if (froms.containsKey(b)) {
-                    DirectedEdge cb = froms.get(b);
-                    w_acb += cb.weight();
-                    if (w_acb > longest) longest = w_acb;
-                    System.out.println("w_abc " + w_acb);
-                    if (w_acb < w_ab) addShortcut(a, b, w_acb, ac, cb);
+            for (DirectedEdge cb : cbs) {
+                int b = cb.to(), w_cb = cb.weight();
+                //System.out.println("b is " + b);
+                if (contracted[b]) continue;
+                if (b == a) continue;
+                neighbors.add(b);
+                boolean witness = false; 
+                for (DirectedEdge e : edgesFrom(a)) {
+                    //System.out.println("match");
+                    //System.out.println("n is " + e.to());
+                    if (e.to() != b) continue;
+                    //System.out.println("found b");
+                    if (e.weight() <= w_cb + w_ac) {
+                        witness = true;
+                        break;
+                    }
+                }
+                if (!witness) {
+                    addShortcut(a, b, c, ac, cb);
+                    shortcutsAdded++;
+                    //System.out.println("added shortcut number " + shortcutCount);
                 }
             }
+
+
+            //for (DirectedEdge ab : G.edgesFrom(a)) {
+            //List<DirectedEdge> aEdges = G.edgesFrom(a);
+            //for (int i = 0; i < aEdges.size(); i++) {
+            //    DirectedEdge ab = aEdges.get(i);
+            //    int b = ab.to(), w_ab = ab.weight();
+            //    //System.out.println("b is " + b);
+            //    if (froms.containsKey(b)) {
+            //        bContained++;
+            //        //System.out.println("b is contained");
+            //        DirectedEdge cb = froms.get(b);
+            //        w_acb += cb.weight();
+            //        //System.out.println("w_acb " + w_acb);
+            //        //System.out.println("w_ab " + w_ab);
+            //        if (w_acb < w_ab) addShortcut(a, b, w_acb, ac, cb);
+            //    }
+            //}
         }
+        System.out.println("Shortcuts added = " + shortcutsAdded);
+        System.out.println("Edges removed = " + (edgesFrom(c).size() + edgesTo(c).size()));
         contracted[c] = true;
         for (int n : neighbors) {
             contractedNeighbours[n]++;
-            rank(n);
+            pq.changeKey(n,rank(n));
         }
     }
 
@@ -119,15 +157,16 @@ public class ContractedGraph implements IndexedGraph {
 
         for (int i = 0; i < V; i++) {
             int r = initialRank(i);
-            if (r != Integer.MIN_VALUE)
-                pq.insert(i, r);
+            if (r != Integer.MIN_VALUE) pq.insert(i, r);
+            else                        contracted[i] = true;
         }
 
         while (!pq.isEmpty()) {
             int n = pq.minIndex();
             int r = rank(n);
-            //System.out.println("ranking " + n + " with " + r);
+            System.out.println("ranking " + n + " with " + r);
             if (n == pq.minIndex()) {
+                System.out.println(E() / V());
                 oneHop(pq.delMin());
                 rank[n] = r;
                 failed = 0;
@@ -156,9 +195,11 @@ public class ContractedGraph implements IndexedGraph {
         //    if (e != null && e.weight() > cb.weight()) froms.put(b, cb);
         //}
 
-            //if(G.edgesTo(i).size() == 1) {
-            //    if(G.edgesFrom(i).size() == 1) {
-            //        continue;
+        if(G.edgesTo(node).size() == 1) {
+            if(G.edgesFrom(node).size() == 1) {
+                return Integer.MIN_VALUE;
+            }
+        }
 
         for(int i = 0; i < size-1; i++) {
             DirectedEdge to = edges.get(i);
@@ -191,8 +232,7 @@ public class ContractedGraph implements IndexedGraph {
         List<DirectedEdge> l = G.edgesTo(v);
         for(int i=0;i<G.edgesTo(v).size();i++) {
             DirectedEdge e = l.get(i);
-            if(!contracted[e.from()])
-            edges.add(e);
+            if(!contracted[e.from()]) edges.add(e);
         }
         //First find max weight path from an edge u to an edge w through v:
         int size = edges.size();
@@ -206,11 +246,13 @@ public class ContractedGraph implements IndexedGraph {
                 for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
                     DirectedEdge from = edges.get(j); //define edge going from.
                         int pathLength = to.weight() + from.weight();
-                        if(pathLength > maxDist && to.to() != from.to()) {
-                            maxDist = pathLength;
-                        }
+                        if(pathLength > maxDist) { maxDist = pathLength; }
                 }
         }
+        //System.out.println("Maxdist = " + maxDist);
+        //System.out.println("edges of neighbor = " + size);
+        //System.out.println("edges of neighbor = " + maxDist);
+
         for(int i= 0; i <size-1;i++) {
             int t = edges.get(i).from();
                 d.localSearch(t, maxDist, v, contracted);
@@ -221,8 +263,8 @@ public class ContractedGraph implements IndexedGraph {
                         }
                 }
         }
-        //The edge-difference is counted (changes in edges from contraction)
-        order = shortCutsAdded - size;
+        //The edge-difference is counted (changes in edges from contraction
+        order = (shortCutsAdded - size) + contractedNeighbours[v];
         return order;
     }
 

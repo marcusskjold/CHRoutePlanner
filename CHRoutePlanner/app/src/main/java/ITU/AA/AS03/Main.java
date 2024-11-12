@@ -94,6 +94,7 @@ public class Main {
             //computePairs(AlgorithmType.BIDIRECTIONALDIJKSTRA, graph, 100, DEFAULT_SEED);
             System.out.println("Contracting graph");
             ContractedGraph cgraph = new ContractedGraph(graph);
+            cgraph.contractGraph();
             //Contraction c = new Contraction(graph);
             //c.preProcess();
             //IndexMinPQ<Integer> hierarchy = c.getHierarchy();
@@ -103,12 +104,21 @@ public class Main {
             //    System.out.println(hierarchy.keyOf(i));
             //}
             //System.out.println(set.size());
+            
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        //}
         //try {
         //    a = AlgorithmType.valueOf(args[0]);
-        //} catch (IllegalArgumentException e) { throw ILLEGALALGORITHM; }
+        } catch (IllegalArgumentException e) { throw ILLEGALALGORITHM; }
+
+        WeightedDiGraph G = new WeightedDiGraph(3);
+        G.addUndirectedEdge(0, 2, 3);
+        G.addUndirectedEdge(1, 2, 3);
+        //G.addUndirectedEdge(1, 0, 3);
+        ContractedGraph CG = new ContractedGraph(G);
+        CG.contract(2);
+        System.out.println(CG.shortcutCount());
 
 
 
