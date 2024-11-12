@@ -131,8 +131,7 @@ public class Contraction {
         //    }
         //    //TODO: (implement contract): 
         //}
-        //
-        //
+
         return contractedGraph;
 
      }
