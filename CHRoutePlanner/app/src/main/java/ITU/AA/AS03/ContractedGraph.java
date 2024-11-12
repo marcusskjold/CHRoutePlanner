@@ -153,21 +153,26 @@ public class ContractedGraph implements IndexedGraph {
     // ====================== Private ================
 
     private void contract(IndexedGraph G) {
+        int contractNo = 0;
         int failed = 0, V = G.V();
 
         for (int i = 0; i < V; i++) {
             int r = initialRank(i);
-            if (r != Integer.MIN_VALUE) pq.insert(i, r);
+            if (r != Integer.MIN_VALUE) 
+                pq.insert(i, r);
             else                        contracted[i] = true;
         }
 
         while (!pq.isEmpty()) {
             int n = pq.minIndex();
-            int r = rank(n);
-            System.out.println("ranking " + n + " with " + r);
+            int r = rank(n); 
+            //System.out.println("ranking " + n + " with " + r);
             if (n == pq.minIndex()) {
-                System.out.println(E() / V());
-                oneHop(pq.delMin());
+                contractNo++;
+                //System.out.println(E() / V());
+//                System.out.println("next ranking");
+                System.out.println("Contract number: " + contractNo);
+                dijkstraContract(pq.delMin());
                 rank[n] = r;
                 failed = 0;
             } else {
@@ -206,7 +211,7 @@ public class ContractedGraph implements IndexedGraph {
             for(int j=i+1;j<size;j++) {
                 DirectedEdge from = edges.get(j);
                 int pathLength = to.weight() + from.weight();
-                if(pathLength > maxDist && to.to() != from.to())
+                if(pathLength > maxDist)
                     maxDist = pathLength;
             }
         }
@@ -230,7 +235,7 @@ public class ContractedGraph implements IndexedGraph {
         
         List<DirectedEdge> edges = new ArrayList<>();
         List<DirectedEdge> l = G.edgesTo(v);
-        for(int i=0;i<G.edgesTo(v).size();i++) {
+        for(int i=0;i<l.size();i++) {
             DirectedEdge e = l.get(i);
             if(!contracted[e.from()]) edges.add(e);
         }
@@ -266,6 +271,61 @@ public class ContractedGraph implements IndexedGraph {
         //The edge-difference is counted (changes in edges from contraction
         order = (shortCutsAdded - size) + contractedNeighbours[v];
         return order;
+    }
+
+    private void dijkstraContract(int v) {
+        //int order = 0;
+        //int shortCutsAdded = 0;
+        
+        List<DirectedEdge> edges = new ArrayList<>();
+        List<DirectedEdge> l = G.edgesTo(v);
+        for(int i=0;i<l.size();i++) {
+            DirectedEdge e = l.get(i);
+            if(!contracted[e.from()]) edges.add(e);
+        }
+        //First find max weight path from an edge u to an edge w through v:
+        int size = edges.size();
+        
+        if(size == 1) {
+            contracted[v] = true;
+            return;
+        }
+        //Maybe cap for how big it should be before we stop using max as stopping criterion
+        int maxDist = 0;
+        for(int i=0;i<size-1;i++) {
+            DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
+                for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
+                    DirectedEdge from = edges.get(j); //define edge going from.
+                        int pathLength = to.weight() + from.weight();
+                        if(pathLength > maxDist) { maxDist = pathLength; }
+                }
+        }
+        //System.out.println("Maxdist = " + maxDist);
+        //System.out.println("edges of neighbor = " + size);
+        //System.out.println("edges of neighbor = " + maxDist);
+
+        for(int i= 0; i <size-1;i++) {
+            int t = edges.get(i).from();
+                d.localSearch(t, maxDist, v, contracted);
+                for(int j= i+1; j< size; j++ ) {
+                    int f = edges.get(j).from();
+                        int w = edges.get(i).weight() + edges.get(j).weight();
+                        if(d.distance(f) > w) {
+                            //shortCutsAdded++;
+                            addShortcut(t, f, w, edges.get(i), edges.get(j));
+                        }
+                }
+        }
+        contracted[v] = true;
+        for (int n= 0; n< edges.size();n++) {
+            int i = edges.get(n).from();
+            contractedNeighbours[i]++;
+            //System.out.println(i);
+            pq.changeKey(i,rank(i));
+        }
+        //The edge-difference is counted (changes in edges from contraction
+        //order = (shortCutsAdded - size) + contractedNeighbours[v];
+        //return order;
     }
 
 
