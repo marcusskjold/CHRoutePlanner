@@ -3,35 +3,32 @@ package ITU.AA.AS03;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class Contraction {
-    //Take input Graph 'graph'
+    //Take input Graph 'G'
 
     //maybe make clone 'contractedGraph' (Or just write clone directly in file (but this isn't too many lines, so should be okay?)?)
 
-    //Gradually remove edges and node from 'graph' and add shortcuts etc. to 'contractedGraph'
+    //Gradually remove edges and node from 'G' and add shortcuts etc. to 'contractedGraph'
     //Maybe don't "remove" as such, as it's expensive? Could we have boolean array instead?
 
     //Write contracted Graph to file
 
 
     private boolean[] contracted; //field for maintaining whether ignored
-    private int[] rank; //field for maintaining ranks (maybe not needed or maybe Node class preferred)
-    private IndexedGraph graph;
+    private IndexedGraph G;
     private IndexMinPQ<Integer> nodeHierarchy;
     private LocalDijkstra ld;
-    private int shortcuts;
     //private DijkstraSimple dijkstra; 
 
-    public Contraction(IndexedGraph graph) {
-        int V= graph.V();
+    public Contraction(IndexedGraph G) {
+        int V= G.V();
         contracted = new boolean[V];
-        rank = new int[V];
-        this.graph = graph;
+        this.G = G;
         nodeHierarchy = new IndexMinPQ<>(V);
-        ld = new LocalDijkstra(graph);
-        shortcuts = 0;
-        //dijkstra = new DijkstraSimple(graph);
+        ld = new LocalDijkstra(G);
+        //dijkstra = new DijkstraSimple(G);
         
     }
 
@@ -40,39 +37,27 @@ public class Contraction {
         return nodeHierarchy;
     }
 
-
-
     public int computeOrder(int v) {
-        int order = 0;
-        int shortcutCount = 0;
-        
-        
-        //First find max weight path from an edge u to an edge w through v:
-        List<DirectedEdge> edges = graph.edgesTo(v);
+        int order = 0, shortcutCount = 0;
+        List<DirectedEdge> edges = G.edgesTo(v);
         int size = edges.size();
-        
         int maxDist = 0;
         for(int i=0;i<size-1;i++) {
             DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
             
             for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
                 DirectedEdge from = edges.get(j); //define edge going from.
-                //if(to.to() == from.to()) { //Is this needed?
-                //    break;
-                //}
                 int pathLength = to.weight() + from.weight();
-                if(pathLength > maxDist) {
+                if(pathLength > maxDist && to.to() == from.to())
                     maxDist = pathLength;
-                }
             }
-
         }
 
         for(int i= 0; i <size-1;i++) {
             int t = edges.get(i).from();
-            ld.localSearch(t, 50, maxDist, v);
+            ld.localSearch(t, maxDist, v);
             //witness[i] = true;
-            for(int j= i+1; j< size; j++ ) {
+            for ( int j= i+1; j< size; j++ ) {
                 //TODO: Maybe test if they are equal (in case of parallel edges?)
                 //if(!witness[j]) {
                 //If it reached the given node in the local search on subset, and it is shorter:
@@ -113,14 +98,14 @@ public class Contraction {
    
 
      public IndexedGraph preProcess() {
-        //LocalDijkstra ld = new LocalDijkstra(graph);
-        IndexedGraph contractedGraph = graph;
+        //LocalDijkstra ld = new LocalDijkstra(G);
+        IndexedGraph contractedGraph = G;
         //First order the nodes
         //maybe not all nodes need to be ordered here, or at least at once?
-        for(int i=0;i< graph.V();i++) {
+        for(int i=0;i< G.V();i++) {
             System.out.println("ranking node no: " + i);
-            if(graph.edgesTo(i).size() == 1) {
-                if(graph.edgesFrom(i).size() == 1) {
+            if(G.edgesTo(i).size() == 1) {
+                if(G.edgesFrom(i).size() == 1) {
                     continue;
                 }
             }
@@ -133,28 +118,27 @@ public class Contraction {
         //    int next;
         //    do {
         //    next = nodeHierarchy.minIndex();
-        //    nodeHierarchy.changeKey(next, computeOrder(next, graph));
+        //    nodeHierarchy.changeKey(next, computeOrder(next, G));
         //    } while (nodeHierarchy.minIndex()!=next);
         //    //contract the node
         //    next = nodeHierarchy.delMin();
         //    contract(next); //Maybe should also take graph as input
         //    //order the neighbors
-        //    for (DirectedEdge e : graph.edgesTo(next)) { //Need to be all neighbors (maybe method like 'getNeighbors')
+        //    for (DirectedEdge e : G.edgesTo(next)) { //Need to be all neighbors (maybe method like 'getNeighbors')
         //        int neighbor = e.from();
         //        if(!contracted[neighbor])
-        //            computeOrder(neighbor, graph); //Just needs to be the other point
+        //            computeOrder(neighbor, G); //Just needs to be the other point
         //    }
-//
         //    //TODO: (implement contract): 
         //}
-
-
+        //
+        //
         return contractedGraph;
 
      }
 
-     //TODO: Implement something that writes graph to file
-     //TODO: Make design choices for graph. (maybe undirected actually easiesr here?)
+     //TODO: Implement something that writes G to file
+     //TODO: Make design choices for G. (maybe undirected actually easiesr here?)
 
 
 
@@ -164,14 +148,13 @@ public class Contraction {
         int shortcutCount = 0;
         
         List<DirectedEdge> edges = new ArrayList<>();
-        List<DirectedEdge> l = graph.edgesTo(v);
-        for(int i=0;i<graph.edgesTo(v).size();i++) {
+        List<DirectedEdge> l = G.edgesTo(v);
+        for(int i=0;i<G.edgesTo(v).size();i++) {
             DirectedEdge e = l.get(i);
             if(!contracted[e.from()])
             edges.add(e);
         }
         //First find max weight path from an edge u to an edge w through v:
-        //List<DirectedEdge> edges = graph.edgesTo(v);
         int size = edges.size();
         
         if(size == 1) {
