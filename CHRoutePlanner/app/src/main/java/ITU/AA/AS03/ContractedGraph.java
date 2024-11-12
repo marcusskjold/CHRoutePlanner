@@ -15,22 +15,12 @@ public class ContractedGraph implements IndexedGraph {
     private WeightedDiGraph G;
     private IndexMinPQ<Integer> pq;
     private boolean[] contracted;
+    private int V;
 
-
-    private class Shortcut extends DirectedEdge {
-        DirectedEdge ut, tv;
-
-        Shortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv) {
-            super(u, v, w);
-            this.ut = ut;
-            this.tv = tv;
-
-        }
-        DirectedEdge edgeFrom() { return ut; }
-        DirectedEdge edgeTo()   { return tv; }
-
-
-
+    public ContractedGraph(WeightedDiGraph G) {
+        this.G = G;
+        V = G.V();
+        pq = new IndexMinPQ<>(V);
     }
 
     public int oneHop(int c) {
@@ -67,26 +57,58 @@ public class ContractedGraph implements IndexedGraph {
         G.addDirectedEdge(s);
     }
 
-    @Override public void addDirectedEdge(int u, int v, int w) { G.addDirectedEdge(u, v, w); }
+    // ===================== Forward ==================
+
+    @Override public void addDirectedEdge(int u, int v, int w)   { G.addDirectedEdge(u, v, w); }
     @Override public void addUndirectedEdge(int u, int v, int w) { G.addUndirectedEdge(u, v, w); }
-    @Override public List<DirectedEdge> edgesTo(int index) { return G.edgesTo(index); }
-    @Override public List<DirectedEdge> edgesFrom(int index) { return G.edgesFrom(index); }
+    @Override public List<DirectedEdge> edgesTo(int index)       { return G.edgesTo(index); }
+    @Override public List<DirectedEdge> edgesFrom(int index)     { return G.edgesFrom(index); }
     @Override public int V() { return G.V(); }
     @Override public int E() { return G.E(); }
 
 
-public ContractedGraph(WeightedDiGraph G) {
-        this.G = G;
-        int V = G.V();
-        pq = new IndexMinPQ<>(V);
+    // ====================== Private ================
+
+    private void contract(IndexedGraph G) {
+        prioritize();
+        contract();
     }
 
-    private void localSearch() {
+    private void contract() {
+        while (!pq.isEmpty()) {
+            contract(pq.delMin());
+        }
 
     }
 
-    private void addShortcut(Shortcut s) {
-        G.addDirectedEdge(s);
+    private void contract(int node) {
+        // Logic to maybe do different stuff
+        // For now we only have 1-hop
+        calculateRank(node);
+        oneHop(node);
     }
 
+    private void prioritize() {
+        for (int i = 0; i < V; i++) {
+            calculateRank(i);
+        }
+    }
+
+    private int calculateRank(int node) {
+        int rank = 1;
+        if (pq.keyOf(node) )
+        pq.insert(node, rank);
+
+
+    }
+
+    private class Shortcut extends DirectedEdge {
+        DirectedEdge ut, tv;
+
+        Shortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv) {
+            super(u, v, w); this.ut = ut; this.tv = tv;
+        }
+        DirectedEdge edgeFrom() { return ut; }
+        DirectedEdge edgeTo()   { return tv; }
+    }
 }
