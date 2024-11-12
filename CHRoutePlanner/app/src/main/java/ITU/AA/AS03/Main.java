@@ -68,8 +68,7 @@ public class Main {
             totalEdgeRelax += sp.relaxedEdges();
         }
         double timeMean = (double) totalTime / pairNums;
-        double edgeRelaxMean = (double) totalEdgeRelax / pairNums;
-        System.out.println("mean duration (nanoseconds): " + timeMean);
+        double edgeRelaxMean = (double) totalEdgeRelax / pairNums; System.out.println("mean duration (nanoseconds): " + timeMean);
         System.out.println("mean relaxed edges: " + edgeRelaxMean);
     }
 

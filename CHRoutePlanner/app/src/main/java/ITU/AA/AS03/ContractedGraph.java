@@ -11,10 +11,12 @@ public class ContractedGraph implements IndexedGraph {
 
     private final static int MAX_RANK_FAILS = 20;
     private IndexedGraph G;
+    private IndexedGraph original;
     private IndexMinPQ<Integer> pq;
     private boolean[] contracted;
     private int[] contractedNeighbours;
     private int[] rank;
+    private int[] shortcutsTo;
     private int shortcutCount;
     private LocalDijkstra d;
 
@@ -22,20 +24,28 @@ public class ContractedGraph implements IndexedGraph {
     private int bContained;
 
     public ContractedGraph(IndexedGraph G) {
-        this.G               = G;
+        original             = G;
         int V                = G.V();
         pq                   = new IndexMinPQ<>(V);
         contracted           = new boolean[V];
         contractedNeighbours = new int[V];
+        shortcutsTo          = new int[V];
         rank                 = new int[V];
-        d                    = new LocalDijkstra(G);
         shortcutCount        = 0;
         contractions         = 0;
         bContained           = 0;
     }
 
     public void contractGraph() {
-        contract(G);
+        G = new WeightedDiGraph(original.V());
+        for (int i = 0; i < original.V(); i++) {
+            for (DirectedEdge e : original.edgesFrom(i)) {
+                G.addUndirectedEdge(e.from(), e.to(), e.weight());
+            }
+        }
+        d                    = new LocalDijkstra(G);
+        contract();
+        G = original;
         System.out.println("Graph contracted");
         System.out.println("V         = " + V());
         System.out.println("E         = " + E());
@@ -53,7 +63,9 @@ public class ContractedGraph implements IndexedGraph {
         
         contractions++;
         System.out.println("Contraction nr. " + contractions);
+        System.out.println("degree " + E());
         List<DirectedEdge> cbs = G.edgesFrom(c);
+        List<DirectedEdge> acs = G.edgesTo(c);
         ////System.out.println("edges is size " + edges.size());
         int s = cbs.size();
         Set<Integer> neighbors = new HashSet<>(s * 2, 1.0f);
@@ -69,7 +81,7 @@ public class ContractedGraph implements IndexedGraph {
         //}
         //System.out.println("froms is length " + froms.size());
         //
-        for (DirectedEdge ac : G.edgesTo(c)) {
+        for (DirectedEdge ac : acs) {
             int a = ac.from(), w_ac = ac.weight();
             //System.out.println("a is " + a);
             if (contracted[a]) continue;
@@ -93,6 +105,7 @@ public class ContractedGraph implements IndexedGraph {
                 }
                 if (!witness) {
                     addShortcut(a, b, c, ac, cb);
+                    shortcutsTo[b]++;
                     shortcutsAdded++;
                     //System.out.println("added shortcut number " + shortcutCount);
                 }
@@ -116,9 +129,29 @@ public class ContractedGraph implements IndexedGraph {
             //    }
             //}
         }
-        System.out.println("Shortcuts added = " + shortcutsAdded);
-        System.out.println("Edges removed = " + (edgesFrom(c).size() + edgesTo(c).size()));
+        //System.out.println("Shortcuts added = " + shortcutsAdded);
+        //System.out.println("Edges removed = " + (edgesFrom(c).size() + edgesTo(c).size()));
         contracted[c] = true;
+        //int removeCount = 0;
+        //System.out.println("Contracting " + c);
+        for (DirectedEdge e : cbs) {
+            List<DirectedEdge> l = edgesTo(e.to());
+
+            //System.out.println("removing edge to " + e.to());
+            l.remove(e);
+            System.out.println("l size: " + l.size());
+
+        }
+        
+        for (DirectedEdge e : acs) {
+            List<DirectedEdge> l = edgesFrom(e.from());
+            //System.out.println("removing edge from " + e.from());
+            l.remove(e);
+            System.out.println("l size: " + l.size());
+            
+        }
+        //System.out.println("Removed edges: " + removeCount);
+
         for (int n : neighbors) {
             contractedNeighbours[n]++;
             pq.changeKey(n,rank(n));
@@ -127,6 +160,7 @@ public class ContractedGraph implements IndexedGraph {
 
     private void addShortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv) {
         Shortcut s = new Shortcut(u, v, w, ut, tv);
+        original.addDirectedEdge(s);
         G.addDirectedEdge(s);
         shortcutCount++;
     }
@@ -158,7 +192,7 @@ public class ContractedGraph implements IndexedGraph {
 
     // ====================== Private ================
 
-    private void contract(IndexedGraph G) {
+    private void contract() {
         int contractNo = 0;
         int failed = 0, V = G.V();
 
@@ -172,19 +206,17 @@ public class ContractedGraph implements IndexedGraph {
         while (!pq.isEmpty()) {
             int n = pq.minIndex();
             int r = rank(n); 
-            //System.out.println("ranking " + n + " with " + r);
             if (n == pq.minIndex()) {
                 contractNo++;
-                //System.out.println(E() / V());
-//                System.out.println("next ranking");
-                //System.out.println("Contract number: " + contractNo);
+                //if (ratio < 3) oneHop(pq.delMin());
+                //else          
                 dijkstraContract(pq.delMin());
                 rank[n] = r;
                 failed = 0;
             } else {
                 pq.changeKey(n, r);
                 failed++;
-                System.out.println("fail");
+                //System.out.println("fail");
                 if (failed <= MAX_RANK_FAILS) continue;
                 for (int i = 0; i < V; i++)
                     if (!contracted[i]) rank(i);
@@ -195,6 +227,7 @@ public class ContractedGraph implements IndexedGraph {
     private int initialRank(int node) {
         int shortCutsAdded = 0;
         List<DirectedEdge> edges = G.edgesTo(node);
+        //System.out.println("initial rank of " + node + " with edges " + edges.size());
         int size = edges.size();
         int maxDist = 0;
         //Map<Integer, DirectedEdge> froms = 
@@ -248,9 +281,9 @@ public class ContractedGraph implements IndexedGraph {
         //First find max weight path from an edge u to an edge w through v:
         int size = edges.size();
         
-        if(size == 1) {
-            return -1;
-        }
+        if(size == 1) return -1; 
+        //System.out.println("size = " + size);
+        //if (size > 100 ) return pq.keyOf(v);
         int maxDist = 0;
         for(int i=0;i<size-1;i++) {
             DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
@@ -275,7 +308,7 @@ public class ContractedGraph implements IndexedGraph {
                 }
         }
         //The edge-difference is counted (changes in edges from contraction
-        order = (shortCutsAdded - size) + contractedNeighbours[v];
+        order = (shortCutsAdded - size) + contractedNeighbours[v] + shortcutsTo[v];
         return order;
     }
 
