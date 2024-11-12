@@ -1,7 +1,7 @@
 package ITU.AA.AS03;
 
 public class MCHQuery implements ShortestPathAlgorithm {
-    private MContractedGraph G;
+    //private MContractedGraph G;
     private Dijkstra c, l, r;
     private int s, t, d, meetPoint, relaxes;
     private boolean ready;

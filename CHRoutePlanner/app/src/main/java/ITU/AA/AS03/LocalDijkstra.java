@@ -13,7 +13,7 @@ public class LocalDijkstra {
 
 
     public LocalDijkstra(IndexedGraph graph) {
-        //TODO:
+        //TODO: Be aware of coupling with graph (if another object, then this might need to be passed to constructor)
         G= graph;
         V = graph.V();
         pq = new IndexMinPQ<>(V); 
@@ -36,7 +36,6 @@ public class LocalDijkstra {
      * Also the contracted node is ignored (TODO: maybe a whole array for contracted nodes in general would be useful)
     */
     public void localSearch(int source, int settleLimit, int distLimit, int ignored) {
-    //TODO: Implement
         //increment the search count:
         searchCount ++;
         //initialize track of settled nodes:
@@ -75,7 +74,11 @@ public class LocalDijkstra {
 
     //Returns distance to target node
     public int distance(int target) {
-        return distTo[target];
+        if(reached(target))
+            return distTo[target];
+        else {
+            return Integer.MAX_VALUE;
+        }
     }
    
 
@@ -105,6 +108,37 @@ public class LocalDijkstra {
 
     }
 
+
+    public void localSearch(int source, int settleLimit, int distLimit, int ignored, boolean[] contracted) {
+        //increment the search count:
+        searchCount ++;
+        //initialize track of settled nodes:
+        settledCount = 0;
+        //Initialize the dijkstra search (maybe fine not to check contracted)
+        searchGen[source] = searchCount;
+        distTo[source] = 0;
+        if(pq.contains(source)) {
+            pq.changeKey(source, distTo[source]);
+        } else {pq.insert(source, distTo[source]);}
+        
+        while(!pq.isEmpty() && settledCount<settleLimit) {
+            int node = pq.delMin();
+            if(!contracted[node]) {
+                settledCount++;
+                //If we settle node greater than the max distance shortest distance through v, return
+                if(distTo[node] > distLimit) {
+                    break;
+                }
+                for (DirectedEdge e : G.edgesFrom(node)){
+                    if(!contracted[e.to()]) {
+                        relax(e, ignored);
+                    }
+                }
+            }
+        }
+
+        
+    }
 
 
 
