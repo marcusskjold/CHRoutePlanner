@@ -80,8 +80,14 @@ public class ContractedGraph implements IndexedGraph {
 
     @Override public void addDirectedEdge(int u, int v, int w)   { G.addDirectedEdge(u, v, w); }
     @Override public void addUndirectedEdge(int u, int v, int w) { G.addUndirectedEdge(u, v, w); }
-    @Override public List<DirectedEdge> edgesTo(int index)       { return G.edgesTo(index); }
-    @Override public List<DirectedEdge> edgesFrom(int index)     { return G.edgesFrom(index); }
+    @Override public List<DirectedEdge> edgesTo(int index) {
+        return G.edgesTo(index);
+    }
+    
+    @Override public List<DirectedEdge> edgesFrom(int index) {
+        return G.edgesFrom(index);
+    }
+
     @Override public int V()                                     { return G.V(); }
     @Override public int E()                                     { return G.E(); }
 
@@ -115,7 +121,44 @@ public class ContractedGraph implements IndexedGraph {
     }
 
     private int initialRank(int node) {
-        return -1;
+        int shortcutCount = 0;
+        List<DirectedEdge> edges = G.edgesTo(node);
+        int size = edges.size();
+        int maxDist = 0;
+        //Map<Integer, DirectedEdge> froms = 
+        //    new HashMap<Integer, DirectedEdge>(s, 1.0f);
+
+        //for (DirectedEdge cb : edges) {
+        //    int b = cb.to();
+        //    DirectedEdge e = froms.putIfAbsent(b, cb);
+        //    if (e != null && e.weight() > cb.weight()) froms.put(b, cb);
+        //}
+
+            //if(G.edgesTo(i).size() == 1) {
+            //    if(G.edgesFrom(i).size() == 1) {
+            //        continue;
+
+        for(int i = 0; i < size-1; i++) {
+            DirectedEdge to = edges.get(i);
+            for(int j=i+1;j<size;j++) {
+                DirectedEdge from = edges.get(j);
+                int pathLength = to.weight() + from.weight();
+                if(pathLength > maxDist && to.to() == from.to())
+                    maxDist = pathLength;
+            }
+        }
+
+        for(int i= 0; i <size-1;i++) {
+            int t = edges.get(i).from();
+            d.localSearch(t, maxDist, node);
+            for ( int j= i+1; j< size; j++ ) {
+                int f = edges.get(j).from();
+                    if(d.distance(f) > edges.get(i).weight() + edges.get(j).weight()) {
+                        shortcutCount++;
+                    }
+            }
+        }
+        return shortcutCount - size;
     }
 
     private int rank(int node) {
