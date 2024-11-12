@@ -45,12 +45,12 @@ public class Contraction {
     public int computeOrder(int v) {
         int order = 0;
         int shortcutCount = 0;
-        //LocalDijkstra ld = new LocalDijkstra(graph);
+        
         
         //First find max weight path from an edge u to an edge w through v:
         List<DirectedEdge> edges = graph.edgesTo(v);
         int size = edges.size();
-        //boolean[] witness = new boolean[size]; -> array to avoid duplicate shortcuts -> might not be necessary due to iteration order
+        
         int maxDist = 0;
         for(int i=0;i<size-1;i++) {
             DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
@@ -119,6 +119,11 @@ public class Contraction {
         //maybe not all nodes need to be ordered here, or at least at once?
         for(int i=0;i< graph.V();i++) {
             System.out.println("ranking node no: " + i);
+            if(graph.edgesTo(i).size() == 1) {
+                if(graph.edgesFrom(i).size() == 1) {
+                    continue;
+                }
+            }
             nodeHierarchy.insert(i, computeOrder(i)); //Order could also be a collection that is filled before (different options)
         }
 
