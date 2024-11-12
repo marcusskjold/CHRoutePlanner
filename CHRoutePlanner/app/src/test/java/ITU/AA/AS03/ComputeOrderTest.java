@@ -137,7 +137,7 @@ public class ComputeOrderTest {
         disconnectedNodes = new TestData();
         disconnectedNodes.graph = disconnectedGraph;
         disconnectedNodes.relaxedEdges = 3;
-
+        
         // ===========================
         // Validation
 
@@ -158,9 +158,9 @@ public class ComputeOrderTest {
     //e.g. Node 1 have 3 edges removed and 2 shortcuts added
     @Test void variousNodes_ranks_returnsCorrect() {
         c = new Contraction(smallContractGraph);
-        c.getHierarchy().insert(0, c.computeOrder(0));
-        c.getHierarchy().insert(1, c.computeOrder(1)); 
-        c.getHierarchy().insert(2, c.computeOrder(2));
+        c.getHierarchy().insert(0, c.initialRank(0));
+        c.getHierarchy().insert(1, c.initialRank(1)); 
+        c.getHierarchy().insert(2, c.initialRank(2));
         assertEquals(5, c.getHierarchy().keyOf(0));
         assertEquals(-1, c.getHierarchy().keyOf(1));
         assertEquals(-2, c.getHierarchy().keyOf(2));
@@ -170,14 +170,14 @@ public class ComputeOrderTest {
     //Case: A (Lazy) ordering of nodes in a graph in the middle of getting contracted.
     @Test void CvariousNodes_ranks_returnsCorrect() {
         c = new Contraction(smallContractGraphProcessing);
-        c.getHierarchy().insert(0, c.computeOrder(0, contracted));
-        c.getHierarchy().insert(1, c.computeOrder(1, contracted)); 
-        c.getHierarchy().insert(6, c.computeOrder(6, contracted));
-        c.getHierarchy().insert(10, c.computeOrder(10, contracted));
+        c.getHierarchy().insert(0, c.rank2(0, contracted));
+        c.getHierarchy().insert(1, c.rank2(1, contracted)); 
+        c.getHierarchy().insert(6, c.rank2(6, contracted));
+        c.getHierarchy().insert(10, c.rank2(10, contracted));
         assertEquals(5, c.getHierarchy().keyOf(0));
         assertEquals(-1, c.getHierarchy().keyOf(1));
         assertEquals(-1, c.getHierarchy().keyOf(6));
-        assertEquals(-1, c.getHierarchy().keyOf(10));
+        assertEquals(0, c.getHierarchy().keyOf(10));
     }
 
     

@@ -194,7 +194,6 @@ public class Contraction {
                             //System.out.println("shortcut counted from " + edges.get(i).from() + "to " + edges.get(j).from());
                         }
                     
-                    
                 }
             
         }
@@ -203,6 +202,99 @@ public class Contraction {
         return order;
     }
      
+
+
+
+
+    public int initialRank(int node) {
+        int shortCutsAdded = 0;
+        List<DirectedEdge> edges = G.edgesTo(node);
+        int size = edges.size();
+        int maxDist = 0;
+        if(size == 1) {
+            return Integer.MIN_VALUE; 
+        }
+        //Map<Integer, DirectedEdge> froms = 
+        //    new HashMap<Integer, DirectedEdge>(s, 1.0f);
+
+        //for (DirectedEdge cb : edges) {
+        //    int b = cb.to();
+        //    DirectedEdge e = froms.putIfAbsent(b, cb);
+        //    if (e != null && e.weight() > cb.weight()) froms.put(b, cb);
+        //}
+
+            //if(G.edgesTo(i).size() == 1) {
+            //    if(G.edgesFrom(i).size() == 1) {
+            //        continue;
+
+        for(int i = 0; i < size-1; i++) {
+            DirectedEdge to = edges.get(i);
+            for(int j=i+1;j<size;j++) {
+                DirectedEdge from = edges.get(j);
+                int pathLength = to.weight() + from.weight();
+                if(pathLength > maxDist && to.to() != from.to())
+                    maxDist = pathLength;
+            }
+        }
+
+        for(int i= 0; i <size-1;i++) {
+            int t = edges.get(i).from();
+            ld.localSearch(t, maxDist, node);
+            for ( int j= i+1; j< size; j++ ) {
+                int f = edges.get(j).from();
+                    if(ld.distance(f) > edges.get(i).weight() + edges.get(j).weight()) {
+                        shortCutsAdded++;
+                    }
+            }
+        }
+        return shortCutsAdded - size;
+    }
+
+    //Method identical to the one used in contractedGraph class (with some name adjustments to fit this class)
+    public int rank2(int v, boolean[] contracted) {
+        int order = 0;
+        int shortCutsAdded = 0;
+        
+        List<DirectedEdge> edges = new ArrayList<>();
+        List<DirectedEdge> l = G.edgesTo(v);
+        for(int i=0;i<G.edgesTo(v).size();i++) {
+            DirectedEdge e = l.get(i);
+            if(!contracted[e.from()])
+            edges.add(e);
+        }
+        //First find max weight path from an edge u to an edge w through v:
+        int size = edges.size();
+        
+        if(size == 1) {
+            return -1;
+        }
+        int maxDist = 0;
+        for(int i=0;i<size-1;i++) {
+            DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
+                for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
+                    DirectedEdge from = edges.get(j); //define edge going from.
+                        int pathLength = to.weight() + from.weight();
+                        if(pathLength > maxDist && to.to() != from.to()) {
+                            maxDist = pathLength;
+                        }
+                }
+        }
+        for(int i= 0; i <size-1;i++) {
+            int t = edges.get(i).from();
+                ld.localSearch(t, maxDist, v, contracted);
+                for(int j= i+1; j< size; j++ ) {
+                    int f = edges.get(j).from();
+                        if(ld.distance(f) > edges.get(i).weight() + edges.get(j).weight()) {
+                            shortCutsAdded++;
+                        }
+                }
+        }
+        //The edge-difference is counted (changes in edges from contraction)
+        order = shortCutsAdded - size;
+        return order;
+    }
+
+
 
 
 }
