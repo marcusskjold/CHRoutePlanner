@@ -5,6 +5,8 @@ import java.util.List;
 public interface IndexedGraph {
 
     public void addUndirectedEdge(int u, int v, int w);
+    
+    public void addDirectedEdge(DirectedEdge e);
 
     public void addDirectedEdge(int u, int v, int w);
 

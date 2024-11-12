@@ -92,16 +92,17 @@ public class Main {
             //computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
             //System.out.println("Benchmarking bidirectional (old)");
             //computePairs(AlgorithmType.BIDIRECTIONALDIJKSTRA, graph, 100, DEFAULT_SEED);
-            System.out.println("ranking nodes:");
-            Contraction c = new Contraction(graph);
-            c.preProcess();
-            IndexMinPQ<Integer> hierarchy = c.getHierarchy();
-            HashSet<Integer> set = new HashSet<>();
-            for(int i=0;i<hierarchy.size();i++) {
-                set.add(hierarchy.keyOf(i));
-                System.out.println(hierarchy.keyOf(i));
-            }
-            System.out.println(set.size());
+            System.out.println("Contracting graph");
+            ContractedGraph cgraph = new ContractedGraph(graph);
+            //Contraction c = new Contraction(graph);
+            //c.preProcess();
+            //IndexMinPQ<Integer> hierarchy = c.getHierarchy();
+            //HashSet<Integer> set = new HashSet<>();
+            //for(int i=0;i<hierarchy.size();i++) {
+            //    set.add(hierarchy.keyOf(i));
+            //    System.out.println(hierarchy.keyOf(i));
+            //}
+            //System.out.println(set.size());
         } catch (IOException e) {
             e.printStackTrace();
         }

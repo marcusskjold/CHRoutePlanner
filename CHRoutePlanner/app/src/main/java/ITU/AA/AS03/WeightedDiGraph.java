@@ -28,10 +28,10 @@ public class WeightedDiGraph implements IndexedGraph {
         E++;
     }
 
-    public void addDirectedEdge(DirectedEdge e) {
+    @Override public void addDirectedEdge(DirectedEdge e) {
         validateEdge(e);
         edgesFrom[e.from()].add(e);
-        edgesTo[e.to()]  .add(e);
+        edgesTo[e.to()]    .add(e);
         E++;
     }
 
