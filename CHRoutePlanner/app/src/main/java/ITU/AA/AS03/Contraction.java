@@ -182,7 +182,7 @@ public class Contraction {
         for(int i= 0; i <size-1;i++) {
             int t = edges.get(i).from();
             
-                ld.localSearch(t, 50, maxDist, v, contracted);
+                ld.localSearch(t, maxDist, v, contracted);
                 for(int j= i+1; j< size; j++ ) {
                     //TODO: Maybe test if they are equal (in case of parallel edges?)
                     

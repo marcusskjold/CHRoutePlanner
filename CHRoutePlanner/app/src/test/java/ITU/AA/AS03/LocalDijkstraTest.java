@@ -276,13 +276,8 @@ public class LocalDijkstraTest {
 
      //TODO: something with settled vs reached?
     @Test void CnodeNotSettled_distance_returnsCorrect() {
-<<<<<<< HEAD
-        ld = new LocalDijkstra(smallContractGraphProcessing);
-        ld.localSearch(0, 10, pMax, 1, contracted);   
-=======
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(0, pMax, 1);   
->>>>>>> 0fa0fdc (Start combining methods into a complete contraction pipeline)
+        ld = new LocalDijkstra(smallContractGraphProcessing, 10);
+        ld.localSearch(0, pMax, 1, contracted);   
         assertEquals(Integer.MAX_VALUE, ld.distance(7));
         assertEquals(Integer.MAX_VALUE, ld.distance(1));
     }
