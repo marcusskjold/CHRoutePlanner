@@ -32,6 +32,8 @@ public class ComputeOrderTest {
     int distTo2 = 2;
     int distTo4 = 10;
 
+    IndexedGraph smallContractGraphProcessing;
+    boolean[] contracted;
 
     
     IndexedGraph tooFarApartGraph;
@@ -85,6 +87,27 @@ public class ComputeOrderTest {
         smallContractGraph.addUndirectedEdge(7, 10, 2);
         smallContractGraph.addUndirectedEdge(8, 9, 1);
 
+        //The graph in the middle of being contracted
+        smallContractGraphProcessing = new WeightedDiGraph(11);
+        smallContractGraphProcessing.addUndirectedEdge(0, 1, 1);
+        smallContractGraphProcessing.addUndirectedEdge(0, 3, 2);
+        smallContractGraphProcessing.addUndirectedEdge(0, 4, 10);
+        smallContractGraphProcessing.addUndirectedEdge(0, 5, 17);
+        smallContractGraphProcessing.addUndirectedEdge(0, 6, 6);
+        smallContractGraphProcessing.addUndirectedEdge(1, 2, 5);
+        smallContractGraphProcessing.addUndirectedEdge(1, 7, 10);
+        smallContractGraphProcessing.addUndirectedEdge(2, 3, 0);
+        smallContractGraphProcessing.addUndirectedEdge(6, 8, 10);
+        smallContractGraphProcessing.addUndirectedEdge(7, 10, 2);
+        smallContractGraphProcessing.addUndirectedEdge(8, 9, 1);
+        //Additional shortcuts
+        smallContractGraphProcessing.addUndirectedEdge(1, 10, 12);
+        smallContractGraphProcessing.addUndirectedEdge(6, 9, 11);
+        //The contracted array:
+        contracted = new boolean[11];
+        contracted[2] = true;
+        contracted[7] = true;
+        contracted[8] = true;
 
 
 
@@ -144,6 +167,18 @@ public class ComputeOrderTest {
     }
 
 
+    //Case: A (Lazy) ordering of nodes in a graph in the middle of getting contracted.
+    @Test void CvariousNodes_ranks_returnsCorrect() {
+        c = new Contraction(smallContractGraphProcessing);
+        c.getHierarchy().insert(0, c.computeOrder(0, contracted));
+        c.getHierarchy().insert(1, c.computeOrder(1, contracted)); 
+        c.getHierarchy().insert(6, c.computeOrder(6, contracted));
+        c.getHierarchy().insert(10, c.computeOrder(10, contracted));
+        assertEquals(5, c.getHierarchy().keyOf(0));
+        assertEquals(-1, c.getHierarchy().keyOf(1));
+        assertEquals(-1, c.getHierarchy().keyOf(6));
+        assertEquals(-1, c.getHierarchy().keyOf(10));
+    }
 
     
 

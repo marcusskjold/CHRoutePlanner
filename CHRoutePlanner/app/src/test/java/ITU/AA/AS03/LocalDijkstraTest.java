@@ -32,6 +32,10 @@ public class LocalDijkstraTest {
     int distTo2 = 2;
     int distTo4 = 10;
 
+    IndexedGraph smallContractGraphProcessing;
+    boolean[] contracted;
+
+
 
     
     IndexedGraph tooFarApartGraph;
@@ -84,6 +88,31 @@ public class LocalDijkstraTest {
         smallContractGraph.addUndirectedEdge(6, 8, 10);
         smallContractGraph.addUndirectedEdge(7, 10, 2);
         smallContractGraph.addUndirectedEdge(8, 9, 1);
+
+        //The graph in the middle of being contracted
+        smallContractGraphProcessing = new WeightedDiGraph(11);
+        smallContractGraphProcessing.addUndirectedEdge(0, 1, 1);
+        smallContractGraphProcessing.addUndirectedEdge(0, 3, 2);
+        smallContractGraphProcessing.addUndirectedEdge(0, 4, 10);
+        smallContractGraphProcessing.addUndirectedEdge(0, 5, 17);
+        smallContractGraphProcessing.addUndirectedEdge(0, 6, 6);
+        smallContractGraphProcessing.addUndirectedEdge(1, 2, 5);
+        smallContractGraphProcessing.addUndirectedEdge(1, 7, 10);
+        smallContractGraphProcessing.addUndirectedEdge(2, 3, 0);
+        smallContractGraphProcessing.addUndirectedEdge(6, 8, 10);
+        smallContractGraphProcessing.addUndirectedEdge(7, 10, 2);
+        smallContractGraphProcessing.addUndirectedEdge(8, 9, 1);
+        //Additional shortcuts
+        smallContractGraphProcessing.addUndirectedEdge(1, 10, 12);
+        smallContractGraphProcessing.addUndirectedEdge(6, 9, 11);
+        //The contracted array:
+        contracted = new boolean[11];
+        contracted[2] = true;
+        contracted[7] = true;
+        contracted[8] = true;
+
+
+
 
 
 
@@ -221,31 +250,36 @@ public class LocalDijkstraTest {
 /// 
 
 @Test void CexceedPMax_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph);
-        ld.localSearch(0, 10, pMax, 1);   
-        assertEquals(settledNodesMax, ld.getSettledCount());
+        ld = new LocalDijkstra(smallContractGraphProcessing);
+        ld.localSearch(0, 10, pMax, 1, contracted);   
+        assertEquals(5, ld.getSettledCount());
     }
 
     @Test void CexceedSettledcount_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph);
-        ld.localSearch(0, 4, pMax, 1);   
-        assertEquals(settledNodesLim4, ld.getSettledCount());
+        ld = new LocalDijkstra(smallContractGraphProcessing);
+        ld.localSearch(0, 4, pMax, 1, contracted);   
+        assertEquals(4, ld.getSettledCount());
     }
 
+   
     @Test void CexceedPMax_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph);
-        ld.localSearch(0, 10, pMax, 1);   
-        assertEquals(distTo2, ld.distance(2));
+        ld = new LocalDijkstra(smallContractGraphProcessing);
+        ld.localSearch(9, 3, pMax, 1);
+        ld.localSearch(10, 3, pMax, 1, contracted);
+        ld.localSearch(0, 10, pMax, 1, contracted);   
+        assertEquals(Integer.MAX_VALUE, ld.distance(2));
         assertEquals(distTo4, ld.distance(4));
+        assertEquals(17, ld.distance(9));
     }
 
+     //TODO: something with settled vs reached?
     @Test void CnodeNotSettled_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph);
-        ld.localSearch(0, 10, pMax, 1);   
+        ld = new LocalDijkstra(smallContractGraphProcessing);
+        ld.localSearch(0, 10, pMax, 1, contracted);   
         assertEquals(Integer.MAX_VALUE, ld.distance(7));
-        assertEquals(Integer.MAX_VALUE, ld.distance(9));
         assertEquals(Integer.MAX_VALUE, ld.distance(1));
     }
+
 
 
 

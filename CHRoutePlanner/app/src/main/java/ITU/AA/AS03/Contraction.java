@@ -1,5 +1,6 @@
 package ITU.AA.AS03;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,64 +41,6 @@ public class Contraction {
     }
 
 
-    //public void contract(int v) {
-    //    //int shortcutCount = 0;
-    //    contracted[v] = true;
-    //    
-    //    //First find max weight path from an edge u to an edge w through v:
-    //    List<DirectedEdge> edges = graph.edgesFrom(v);
-    //    int size = edges.size();
-    //    //boolean[] witness = new boolean[size]; -> array to avoid duplicate shortcuts -> might not be necessary due to iteration order
-    //    int maxDist = 0;
-    //    for(int i=0;i<size-1;i++) {
-    //        DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
-    //        assert(to.to()==v);
-    //        if(!contracted[to.from()]){
-    //            for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
-    //                DirectedEdge from = edges.get(j); //define edge going from.
-    //                //if(to.to() == from.to()) { //Is this needed?
-    //                //    break;
-    //                //}
-    //                int pathLength = to.weight() + from.weight();
-    //                if(pathLength > maxDist) {
-    //                    maxDist = pathLength;
-    //                }
-    //            }
-    //        }
-//
-//
-    //        ////check for witness path from a node in U to a node in W exists
-    //        //List<DirectedEdge> altEdges = graph.getEdges(to.to() );
-    //        //for (DirectedEdge directedEdge : altEdges) {
-    //        //    if(edges.contains(directedEdge.to())) {
-    //        //        if(directedEdge.weight() < ) {
-    //        //            // (Maybe max don't have to be found, and rather one could try to
-    //        //            // just look for other shortest paths)
-    //        //        }
-    //        //    }
-    //        //    
-    //        //}
-//
-    //    }
-    //    for(int i= 0; i <size-1;i++) {
-    //        ld.localSearch(i, 50, maxDist, v);
-    //        //witness[i] = true;
-    //        for(int j= i+1; j< size; j++ ) {
-    //            //TODO: Maybe test if they are equal (in case of parallel edges?)
-    //            //if(!witness[j]) {
-    //            //If it reached the given node in the local search on subset, and it is shorter:
-    //                if(ld.reached(j) && ld.distance(j) > edges.get(i).weight() + edges.get(j).weight()) {
-    //                    //add shortcut or count for shortcut:
-    //                    shortcuts++;
-    //
-    //                }
-    //            //}
-    //        }
-    //    }
-    //    //The edge-difference is counted
-    //    order = Math.abs(size - shortcutCount);
-    //    
-    //}
 
     public int computeOrder(int v) {
         int order = 0;
@@ -214,50 +157,59 @@ public class Contraction {
      public int computeOrder(int v, boolean[] contracted) {
         int order = 0;
         int shortcutCount = 0;
-        //LocalDijkstra ld = new LocalDijkstra(graph);
         
+        List<DirectedEdge> edges = new ArrayList<>();
+        List<DirectedEdge> l = graph.edgesTo(v);
+        for(int i=0;i<graph.edgesTo(v).size();i++) {
+            DirectedEdge e = l.get(i);
+            if(!contracted[e.from()])
+            edges.add(e);
+        }
         //First find max weight path from an edge u to an edge w through v:
-        List<DirectedEdge> edges = graph.edgesTo(v);
+        //List<DirectedEdge> edges = graph.edgesTo(v);
         int size = edges.size();
-        //boolean[] witness = new boolean[size]; -> array to avoid duplicate shortcuts -> might not be necessary due to iteration order
+        
+        if(size == 1) {
+            return -1;
+        }
         int maxDist = 0;
         for(int i=0;i<size-1;i++) {
             DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
-            if(!contracted[to.from()]){
+            
                 for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
                     DirectedEdge from = edges.get(j); //define edge going from.
                     //if(to.to() == from.to()) { //Is this needed?
                     //    break;
                     //}
-                    if(!contracted[from.from()]) {
+                    
                         int pathLength = to.weight() + from.weight();
                         if(pathLength > maxDist) {
                             maxDist = pathLength;
                         }
-                    }
+                    
                 }
-            }
+            
         }
 
         for(int i= 0; i <size-1;i++) {
             int t = edges.get(i).from();
-            if(!contracted[t]) {
+            
                 ld.localSearch(t, 50, maxDist, v, contracted);
                 for(int j= i+1; j< size; j++ ) {
                     //TODO: Maybe test if they are equal (in case of parallel edges?)
                     
                     //If it reached the given node in the local search on subset, and it is shorter:
                     int f = edges.get(j).from();
-                    if(!contracted[t]) {
+                    
                         if(ld.distance(f) > edges.get(i).weight() + edges.get(j).weight()) {
                             //add shortcut or count for shortcut:
                             shortcutCount++;
                             //System.out.println("shortcut counted from " + edges.get(i).from() + "to " + edges.get(j).from());
                         }
-                    }
+                    
                     
                 }
-            }
+            
         }
         //The edge-difference is counted (changes in edges from contraction)
         order = shortcutCount - size;
