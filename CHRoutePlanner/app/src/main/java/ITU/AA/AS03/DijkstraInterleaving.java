@@ -62,6 +62,7 @@ public class DijkstraInterleaving implements ShortestPathAlgorithm {
         c.pq.insert(s, 0);   c.opposite.pq.insert(t, 0);
 
         findShortestPath();
+        //System.out.println("shortest path " + d);
 
         if (d < Integer.MAX_VALUE) return true;
         else return false;

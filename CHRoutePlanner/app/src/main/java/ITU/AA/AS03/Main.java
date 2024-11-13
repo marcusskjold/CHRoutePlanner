@@ -41,6 +41,7 @@ public class Main {
 
     //Compute shortest distance for a 1000 randomly generated pairs (maybe refactor pair generation***)
     private static void computePairs(AlgorithmType type, IndexedGraph graph, int pairNums, long seed) {
+        int found = 0; 
         Random r = new Random(seed);
         long startTime;
         long endTime;
@@ -57,7 +58,7 @@ public class Main {
             //System.out.println("target: " + target);
             //System.out.println("starting calculation no: " + i);
             startTime = System.currentTimeMillis();
-            sp.calculate(source, target);
+            if (sp.calculate(source, target)) found++;
             int d = sp.distance();
             endTime = System.currentTimeMillis();
             totalTime += (endTime - startTime);
@@ -68,8 +69,10 @@ public class Main {
             totalEdgeRelax += sp.relaxedEdges();
         }
         double timeMean = (double) totalTime / pairNums;
-        double edgeRelaxMean = (double) totalEdgeRelax / pairNums; System.out.println("mean duration (nanoseconds): " + timeMean);
+        double edgeRelaxMean = (double) totalEdgeRelax / pairNums;
+        System.out.println("mean duration (nanoseconds): " + timeMean);
         System.out.println("mean relaxed edges: " + edgeRelaxMean);
+        System.out.println("found path these amount of times: " + found);
     }
 
 
@@ -94,6 +97,10 @@ public class Main {
             System.out.println("Contracting graph");
             ContractedGraph cgraph = new ContractedGraph(graph);
             cgraph.contractGraph();
+            System.out.println("Benchmarking interleaving with contracted graph");
+            computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, cgraph, 100, DEFAULT_SEED);
+            System.out.println("Benchmarking bidirectional with contracted graph");
+            computePairs(AlgorithmType.BIDIJKSTRA, cgraph, 100, DEFAULT_SEED);
             //Contraction c = new Contraction(graph);
             //c.preProcess();
             //IndexMinPQ<Integer> hierarchy = c.getHierarchy();
