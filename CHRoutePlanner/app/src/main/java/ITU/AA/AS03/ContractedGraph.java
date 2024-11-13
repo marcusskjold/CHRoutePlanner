@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ContractedGraph implements IndexedGraph {
-
+    
     private final static int MAX_RANK_FAILS = 20;
     private IndexedGraph G;
     private IndexedGraph original;
