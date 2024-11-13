@@ -19,4 +19,6 @@ public interface IndexedGraph {
     public int E();
 
     public int V();
+
+    //public String toString();
 }

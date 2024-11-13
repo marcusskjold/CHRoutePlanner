@@ -104,7 +104,7 @@ public class Main {
             //    System.out.println(hierarchy.keyOf(i));
             //}
             //System.out.println(set.size());
-            
+            cgraph.printGraph();
         } catch (IOException e) {
             e.printStackTrace();
         //}

@@ -97,4 +97,13 @@ public class LocationGraph implements IndexedGraph {
 
     @Override public int E()                                 { return G.E(); }
 
+
+
+    //public String toString() {
+    //    String verticesEtc = "";
+    //    for(int i=0;i<ids.length;i++) {
+    //        verticesEtc += " ";
+    //    }
+    //    return G.toString() + "\n";
+    //}
 }

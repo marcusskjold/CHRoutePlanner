@@ -65,4 +65,8 @@ public class WeightedDiGraph implements IndexedGraph {
     private void validateEdge(DirectedEdge e) {
         validateEdge(e.from(), e.to(), e.weight());
     }
+
+    //public String toString() {
+    //    return V + " " + E;
+    //}
 }

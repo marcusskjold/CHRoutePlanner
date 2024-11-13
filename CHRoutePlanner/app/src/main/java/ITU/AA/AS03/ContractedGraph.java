@@ -131,6 +131,12 @@ public class ContractedGraph implements IndexedGraph {
         shortcutCount++;
     }
 
+    private void addShortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv, int contracted) {
+        Shortcut s = new Shortcut(u, v, w, ut, tv, contracted);
+        G.addDirectedEdge(s);
+        shortcutCount++;
+    }
+
     // ===================== Forward ==================
 
     @Override public void addDirectedEdge(int u, int v, int w)   { G.addDirectedEdge(u, v, w); }
@@ -171,7 +177,7 @@ public class ContractedGraph implements IndexedGraph {
                 contractNo++;
                 //System.out.println(E() / V());
 //                System.out.println("next ranking");
-                System.out.println("Contract number: " + contractNo);
+                //System.out.println("Contract number: " + contractNo);
                 dijkstraContract(pq.delMin());
                 rank[n] = r;
                 failed = 0;
@@ -312,7 +318,7 @@ public class ContractedGraph implements IndexedGraph {
                         int w = edges.get(i).weight() + edges.get(j).weight();
                         if(d.distance(f) > w) {
                             //shortCutsAdded++;
-                            addShortcut(t, f, w, edges.get(i), edges.get(j));
+                            addShortcut(t, f, w, edges.get(i), edges.get(j), v);
                         }
                 }
         }
@@ -331,11 +337,42 @@ public class ContractedGraph implements IndexedGraph {
 
     private class Shortcut extends DirectedEdge {
         DirectedEdge ut, tv;
+        int c;
 
         Shortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv) {
             super(u, v, w); this.ut = ut; this.tv = tv;
         }
+        Shortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv, int contracted) {
+            super(u, v, w); this.ut = ut; this.tv = tv; c = contracted;
+        }
         DirectedEdge edgeFrom() { return ut; }
         DirectedEdge edgeTo()   { return tv; }
     }
+
+    public void printGraph() {
+        System.out.println(G.V() + " " + G.E());
+            for(int i=0;i<G.V();i++) {
+                System.out.println(i + " " + rank[i]);
+            }
+            Set<DirectedEdge> allEdges = new HashSet<>();
+            for(int i=0;i<G.V();i++) {
+                List<DirectedEdge>  l = G.edgesFrom(i);
+                for (DirectedEdge directedEdge : l) {
+                    if(!allEdges.contains(directedEdge)) {
+                        allEdges.add(directedEdge);
+                        allEdges.add(new DirectedEdge(directedEdge.to(), directedEdge.from(), directedEdge.weight()));
+                        if(directedEdge instanceof Shortcut) {
+                            Shortcut s = (Shortcut) directedEdge;
+                            System.out.println(s.from() + " " + s.to() + " " + s.c);
+                        } else {
+                            System.out.println(directedEdge.from() + " " + directedEdge.to() + " " + -1);
+                        }
+                        
+                    }
+                    
+                }
+            }
+    }
+
+
 }
