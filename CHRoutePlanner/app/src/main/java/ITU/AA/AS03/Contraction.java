@@ -232,7 +232,7 @@ public class Contraction {
             for(int j=i+1;j<size;j++) {
                 DirectedEdge from = edges.get(j);
                 int pathLength = to.weight() + from.weight();
-                if(pathLength > maxDist && to.to() != from.to())
+                if(pathLength > maxDist && to.from() != from.from())
                     maxDist = pathLength;
             }
         }

@@ -70,7 +70,7 @@ public class Main {
         }
         double timeMean = (double) totalTime / pairNums;
         double edgeRelaxMean = (double) totalEdgeRelax / pairNums;
-        System.out.println("mean duration (nanoseconds): " + timeMean);
+        System.out.println("mean duration (ms): " + timeMean);
         System.out.println("mean relaxed edges: " + edgeRelaxMean);
         System.out.println("found path these amount of times: " + found);
     }
@@ -99,8 +99,8 @@ public class Main {
             cgraph.contractGraph();
             System.out.println("Benchmarking interleaving with contracted graph");
             computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, cgraph, 100, DEFAULT_SEED);
-            System.out.println("Benchmarking bidirectional with contracted graph");
-            computePairs(AlgorithmType.BIDIJKSTRA, cgraph, 100, DEFAULT_SEED);
+            System.out.println("Benchmarking bidirectional with uncontracted graph");
+            computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
             //Contraction c = new Contraction(graph);
             //c.preProcess();
             //IndexMinPQ<Integer> hierarchy = c.getHierarchy();
@@ -110,7 +110,7 @@ public class Main {
             //    System.out.println(hierarchy.keyOf(i));
             //}
             //System.out.println(set.size());
-            cgraph.printGraph();
+            //cgraph.printGraph();
         } catch (IOException e) {
             e.printStackTrace();
         }

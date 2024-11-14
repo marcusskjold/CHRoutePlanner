@@ -177,7 +177,7 @@ public class ComputeOrderTest {
         assertEquals(5, c.getHierarchy().keyOf(0));
         assertEquals(-1, c.getHierarchy().keyOf(1));
         assertEquals(-1, c.getHierarchy().keyOf(6));
-        assertEquals(0, c.getHierarchy().keyOf(10));
+        assertEquals(-1, c.getHierarchy().keyOf(10));
     }
 
     

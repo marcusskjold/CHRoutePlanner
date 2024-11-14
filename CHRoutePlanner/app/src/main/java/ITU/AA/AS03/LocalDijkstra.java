@@ -120,6 +120,7 @@ public class LocalDijkstra {
                 if(distTo[node] > distLimit) {
                     break;
                 }
+                
                 for (DirectedEdge e : G.edgesFrom(node)){
                     if(!contracted[e.to()]) {
                         relax(e, ignored);

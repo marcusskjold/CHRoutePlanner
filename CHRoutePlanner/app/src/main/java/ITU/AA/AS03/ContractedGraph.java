@@ -54,7 +54,7 @@ public class ContractedGraph implements IndexedGraph {
         for (int i = 0; i < V(); i++) {
             int degree = 0;
             int r = rank[i];
-            System.out.println(r);
+            //System.out.println(r);
             for (DirectedEdge e : G.edgesFrom(i)) {
                 if (r <= rank[e.to()]) {
                     higherEdgesFrom[i].add(e);
@@ -67,14 +67,14 @@ public class ContractedGraph implements IndexedGraph {
                     degree++;
                 }
             }
-            System.out.println(degree);
+            //System.out.println(degree);
         }
         System.out.println("Graph contracted");
-        System.out.println("V         = " + V());
-        System.out.println("E         = " + E());
-        System.out.println("shortcuts = " + shortcutCount);
-        System.out.println("hops      = " + contractions);
-        System.out.println("total bs contained in map " + bContained);
+        System.out.println("V               = " + V());
+        System.out.println("E (directed)    = " + E());
+        System.out.println("shortcuts       = " + shortcutCount);
+        System.out.println("hops            = " + contractions);
+        //System.out.println("total bs contained in map " + bContained);
     }
 
     public int contractions()   { return contractions; }
@@ -118,15 +118,35 @@ public class ContractedGraph implements IndexedGraph {
         }
     }
 
+    //Unused for now, I think
     private void addShortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv) {
+        //Shortcut s = new Shortcut(u, v, w, ut, tv);
+        //G.addDirectedEdge(s);
+        
         Shortcut s = new Shortcut(u, v, w, ut, tv);
+        //G.addUndirectedEdge(s);
         G.addDirectedEdge(s);
+        Shortcut s2 = new Shortcut(v, u, w, ut, tv);
+        G.addDirectedEdge(s2);
         shortcutCount++;
     }
 
     private void addShortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv, int contracted) {
+        //Shortcut only seems to be added in one direction: 
+        //Shortcut s = new Shortcut(u, v, w, ut, tv, contracted);
+        //G.addDirectedEdge(s);
+
+        //Instead:
         Shortcut s = new Shortcut(u, v, w, ut, tv, contracted);
+        //Maybe this new method could do it:
+        //G.addUndirectedEdge(s);
+        
+        //Until this method exists:
         G.addDirectedEdge(s);
+        Shortcut s2 = new Shortcut(v, u, w, ut, tv, contracted);
+        G.addDirectedEdge(s2);
+
+
         shortcutCount++;
     }
 
@@ -135,6 +155,9 @@ public class ContractedGraph implements IndexedGraph {
     @Override public void addDirectedEdge(int u, int v, int w)   { G.addDirectedEdge(u, v, w); }
     @Override public void addUndirectedEdge(int u, int v, int w) { G.addUndirectedEdge(u, v, w); }
     @Override public void addDirectedEdge(DirectedEdge e) { G.addDirectedEdge(e); }
+    //Tried to add this
+    @Override public void addUndirectedEdge(DirectedEdge e) { G.addUndirectedEdge(e); }
+
     @Override public List<DirectedEdge> edgesTo(int index) {
         return higherEdgesTo[index];
     }
@@ -155,7 +178,8 @@ public class ContractedGraph implements IndexedGraph {
 
         for (int i = 0; i < V; i++) {
             int r = initialRank(i);
-            if (r != Integer.MIN_VALUE) pq.insert(i, r);
+            if (r != Integer.MIN_VALUE) pq.insert(i, r); 
+                
         }
 
         while (!pq.isEmpty()) {
@@ -163,9 +187,10 @@ public class ContractedGraph implements IndexedGraph {
             int r = rank(n); 
             if (n == pq.minIndex()) {
                 contractNo++;
-                if (contractNo < 1)             // Doesn't seem to make a differenct
-                    oneHop(pq.delMin());
-                else 
+                //if (contractNo < 1)             // Doesn't seem to make a differenct
+                //    oneHop(pq.delMin());
+                //else 
+                    //System.out.println("contracting " + n);
                     dijkstraContract(pq.delMin());
                 rank[n] = globalRank++;
                 failed = 0;
@@ -179,14 +204,20 @@ public class ContractedGraph implements IndexedGraph {
         }
     }
 
+    
+
     private int initialRank(int node) {
         int shortCutsAdded = 0;
         List<DirectedEdge> edges = G.edgesTo(node);
         int size = edges.size();
         int maxDist = 0;
-        if(G.edgesTo(node).size() == 1) {
-            if(G.edgesFrom(node).size() == 1) {
+        //Check whether only one neighbor
+        //If so, mark as contracted, give rank, and return MIN-Value
+        if(size == 1) {
+            //Second check to adapt to multidirection
+            if(G.edgesFrom(node).size() == 1) { 
                 contracted[node] = true;
+                rank[node] = globalRank++;
                 return Integer.MIN_VALUE;
             }
         }
@@ -220,6 +251,7 @@ public class ContractedGraph implements IndexedGraph {
         
         List<DirectedEdge> edges = new ArrayList<>();
         List<DirectedEdge> l = G.edgesTo(v);
+
         for(int i=0;i<l.size();i++) {
             DirectedEdge e = l.get(i);
             if(!contracted[e.from()]) edges.add(e);
@@ -227,6 +259,7 @@ public class ContractedGraph implements IndexedGraph {
         //First find max weight path from an edge u to an edge w through v:
         int size = edges.size();
         
+        //If only  one un-contracted neighbor, rank is just 1 (link removed and no shortcuts)
         if(size == 1) return -1; 
         int maxDist = 0;
         for(int i=0;i<size-1;i++) {
@@ -258,21 +291,39 @@ public class ContractedGraph implements IndexedGraph {
         List<DirectedEdge> l = G.edgesTo(v);
         for(int i=0;i<l.size();i++) {
             DirectedEdge e = l.get(i);
-            if(!contracted[e.from()]) edges.add(e);
+            if(!contracted[e.from()]) edges.add(e); //The ones removed in intial rank not here (But what about ones with only one neighbour?)
         }
         int size = edges.size();
         
+        //If just one neighbour, no shortcut needed (Just contract)
         if(size == 1) {
             contracted[v] = true;
             return;
         }
-                                            //Maybe cap for how big it should be before we stop using max as stopping criterion
+                             
+        //Find longest path, u-v-w, where u, w are neighbours (and  it might be that u!=w?)
         int maxDist = 0;
         for(int i=0;i<size-1;i++) {
-            DirectedEdge to = edges.get(i); //define edge going to: Will be different each time since no parallel edges?
-                for(int j=i+1;j<size;j++) { //Here one could loop through adjacency-list and check for witness-paths, simply
-                    DirectedEdge from = edges.get(j); //define edge going from.
-                        int pathLength = to.weight() + from.weight();
+            //Define edge from next neighbour to check, u
+            DirectedEdge edge_u = edges.get(i); 
+                //Go through additional neighbours whose edge's index is bigger than edge_u
+                for(int j=i+1;j<size;j++) { 
+                    //Define edge from other neighbour, w, to check for witnesspaths (from u to w excluding v)
+                    DirectedEdge edge_w = edges.get(j); 
+                        //Debug: Check that we are not having two edges to current node 
+                        //from the same neighbouring node (parallel edges, u=w)
+                        if(edge_w.from()==edge_u.from()) {
+                            //System.out.println("from: ");
+                            //System.out.println(edge_w.from() + " " + edge_u.from());
+                            //System.out.println("to ");
+                            //System.out.println(edge_w.to() + " " + edge_u.to());
+                            System.out.println("Parallel edge???");
+                            if(edge_w instanceof Shortcut || edge_u instanceof Shortcut)
+                            System.out.println("Shortcut!");
+                            //System.exit(1);
+                        }
+                        //Compute length of path u-v-w, and update max length of those 
+                        int pathLength = edge_u.weight() + edge_w.weight();
                         if(pathLength > maxDist) { maxDist = pathLength; }
                 }
         }
@@ -286,7 +337,7 @@ public class ContractedGraph implements IndexedGraph {
                         int w = edges.get(i).weight() + edges.get(j).weight();
                         if(d.distance(f) > w) {
                             //shortCutsAdded++;
-                            addShortcut(t, f, w, edges.get(i), edges.get(j));
+                            addShortcut(t, f, w, edges.get(i), edges.get(j), v);
                             shortcutsTo[f]++;
                         }
                 }
@@ -308,7 +359,7 @@ public class ContractedGraph implements IndexedGraph {
         DirectedEdge ut, tv;
         int c;
 
-        Shortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv) {
+        Shortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv) { //TODO: For now the orders of ut and tv hasn't been thought about
             super(u, v, w); this.ut = ut; this.tv = tv;
         }
         Shortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv, int contracted) {
@@ -316,10 +367,12 @@ public class ContractedGraph implements IndexedGraph {
         }
         DirectedEdge edgeFrom() { return ut; }
         DirectedEdge edgeTo()   { return tv; }
+
     }
 
+    
     public void printGraph() {
-        System.out.println(G.V() + " " + G.E());
+        System.out.println(G.V() + " " + G.E()/2); //TODO: For now E() prints out all UNDIRECTED edges (double the amount of original E)
             for(int i=0;i<G.V();i++) {
                 System.out.println(i + " " + rank[i]);
             }
@@ -329,11 +382,12 @@ public class ContractedGraph implements IndexedGraph {
                 for (DirectedEdge directedEdge : l) {
                     if(!allEdges.contains(directedEdge)) {
                         allEdges.add(directedEdge);
-                        allEdges.add(new DirectedEdge(directedEdge.to(), directedEdge.from(), directedEdge.weight()));
                         if(directedEdge instanceof Shortcut) {
                             Shortcut s = (Shortcut) directedEdge;
+                            allEdges.add(new Shortcut(directedEdge.to(), directedEdge.from(),directedEdge.weight(), s.ut, s.tv, s.c));
                             System.out.println(s.from() + " " + s.to() + " " + s.c);
                         } else {
+                            allEdges.add(new DirectedEdge(directedEdge.to(), directedEdge.from(), directedEdge.weight()));
                             System.out.println(directedEdge.from() + " " + directedEdge.to() + " " + -1);
                         }
                         
@@ -341,6 +395,23 @@ public class ContractedGraph implements IndexedGraph {
                     
                 }
             }
+    }
+
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+    //helper methods for testing Contraction:
+
+    //Method that sets the initial orderings of nodes
+    //Maybe should take another V as parameter***
+    public void initialOrdering() {
+        for (int i = 0; i < G.V(); i++) {
+            int r = initialRank(i);
+            if (r != Integer.MIN_VALUE) pq.insert(i, r); 
+        }
+    }
+
+    public IndexMinPQ<Integer> getPq() {
+        return pq;
     }
 
 
