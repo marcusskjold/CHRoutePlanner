@@ -10,6 +10,7 @@ import java.util.Set;
 
 public class ContractedGraph implements IndexedGraph {
     
+    //TODO: Might need to be set higher:
     private final static int MAX_RANK_FAILS = 20;
     private IndexedGraph G;
     private IndexedGraph original;
@@ -80,44 +81,6 @@ public class ContractedGraph implements IndexedGraph {
     public int contractions()   { return contractions; }
     public int shortcutCount()  { return shortcutCount; }
 
-    public void oneHop(int c) {
-        
-        List<DirectedEdge> cbs = G.edgesFrom(c);
-        List<DirectedEdge> acs = G.edgesTo(c);
-        int s = cbs.size();
-        Set<Integer> neighbors = new HashSet<>(s * 2, 1.0f);
-        for (DirectedEdge ac : acs) {
-            int a = ac.from(), w_ac = ac.weight();
-            if (contracted[a]) continue;
-            neighbors.add(a);
-            for (DirectedEdge cb : cbs) {
-                int b = cb.to(), w_cb = cb.weight();
-                if (contracted[b]) continue;
-                if (b == a) continue;
-                neighbors.add(b);
-                boolean witness = false; 
-                for (DirectedEdge e : G.edgesFrom(a)) {
-                    if (e.to() != b) continue;
-                    if (e.weight() <= w_cb + w_ac) {
-                        witness = true;
-                        break;
-                    }
-                }
-                if (!witness) {
-                    addShortcut(a, b, c, ac, cb);
-                    shortcutsTo[b]++;
-                }
-            }
-
-
-        }
-        contracted[c] = true;
-        for (int n : neighbors) {
-            contractedNeighbours[n]++;
-            if (pq.contains(n)) pq.changeKey(n,rank(n));
-        }
-    }
-
     //Unused for now, I think
     private void addShortcut(int u, int v, int w, DirectedEdge ut, DirectedEdge tv) {
         //Shortcut s = new Shortcut(u, v, w, ut, tv);
@@ -181,12 +144,19 @@ public class ContractedGraph implements IndexedGraph {
             if (r != Integer.MIN_VALUE) pq.insert(i, r); 
                 
         }
-
+        
         while (!pq.isEmpty()) {
             int n = pq.minIndex();
+            //TODO: This isn't updated in the PQ!!!!!
             int r = rank(n); 
+            //try this:
+            //pq.changeKey(n, r);
+            //or
+            //if (pq.keyOf(pq.minIndex()) == r) {
             if (n == pq.minIndex()) {
+                
                 contractNo++;
+                System.out.println("contracting no: " + contractNo);
                 //if (contractNo < 1)             // Doesn't seem to make a differenct
                 //    oneHop(pq.delMin());
                 //else 
@@ -198,7 +168,7 @@ public class ContractedGraph implements IndexedGraph {
                 pq.changeKey(n, r);
                 failed++;
                 if (failed <= MAX_RANK_FAILS) continue;
-                for (int i = 0; i < V; i++)
+                for (int i = 0; i < V; i++) //Maybe just scan through pq?
                     if (!contracted[i]) rank(i);
             }
         }
@@ -281,8 +251,43 @@ public class ContractedGraph implements IndexedGraph {
                 }
         }
         //The edge-difference is counted (changes in edges from contraction
-        order = (shortCutsAdded - size) + contractedNeighbours[v] + shortcutsTo[v];
+        order = (shortCutsAdded - size) + contractedNeighbours[v]; //+ shortcutsTo[v]
         return order;
+    }
+
+
+    private int findMaxDist(int v, List<DirectedEdge> neighbours) {
+        //Find longest path, u-v-w, where u, w are neighbours (and  it might be that u!=w?)
+        int maxDist = 0;
+        int size = neighbours.size();
+        for(int i=0;i<size-1;i++) {
+            //Define edge from next neighbour to check, u
+            DirectedEdge edge_u = neighbours.get(i); 
+                //Go through additional neighbours whose edge's index is bigger than edge_u
+                for(int j=i+1;j<size;j++) { 
+                    //Define edge from other neighbour, w, to check for witnesspaths (from u to w excluding v)
+                    DirectedEdge edge_w = neighbours.get(j); 
+                        //Debug: Check that we are not having two edges to current node 
+                        //from the same neighbouring node (parallel edges, u=w)
+                        //TODO: Just delete this check, since its in inner loop
+                        if(edge_w.from()==edge_u.from()) {
+                            //System.out.println("from: ");
+                            //System.out.println(edge_w.from() + " " + edge_u.from());
+                            //System.out.println("to ");
+                            //System.out.println(edge_w.to() + " " + edge_u.to());
+                            System.out.println("Parallel edge???");
+                            if(edge_w instanceof Shortcut || edge_u instanceof Shortcut)
+                            System.out.println("Shortcut!");
+                            //System.exit(1);
+                            //maybe just continue when parallel edge, since redundant?
+                            //continue;
+                        }
+                        //Compute length of path u-v-w, and update max length of those 
+                        int pathLength = edge_u.weight() + edge_w.weight();
+                        if(pathLength > maxDist) { maxDist = pathLength; }
+                }
+        }
+        return maxDist;
     }
 
     private void dijkstraContract(int v) {
@@ -296,37 +301,39 @@ public class ContractedGraph implements IndexedGraph {
         int size = edges.size();
         
         //If just one neighbour, no shortcut needed (Just contract)
+        //TODO: Maybe throw error if no neighbours? (Or actually just return for less than zero, since it handles last two vertices?)
         if(size == 1) {
             contracted[v] = true;
             return;
         }
-                             
+        //TODO: Put it other places and test it      
+        int maxDist = findMaxDist(v, edges);
         //Find longest path, u-v-w, where u, w are neighbours (and  it might be that u!=w?)
-        int maxDist = 0;
-        for(int i=0;i<size-1;i++) {
-            //Define edge from next neighbour to check, u
-            DirectedEdge edge_u = edges.get(i); 
-                //Go through additional neighbours whose edge's index is bigger than edge_u
-                for(int j=i+1;j<size;j++) { 
-                    //Define edge from other neighbour, w, to check for witnesspaths (from u to w excluding v)
-                    DirectedEdge edge_w = edges.get(j); 
-                        //Debug: Check that we are not having two edges to current node 
-                        //from the same neighbouring node (parallel edges, u=w)
-                        if(edge_w.from()==edge_u.from()) {
-                            //System.out.println("from: ");
-                            //System.out.println(edge_w.from() + " " + edge_u.from());
-                            //System.out.println("to ");
-                            //System.out.println(edge_w.to() + " " + edge_u.to());
-                            System.out.println("Parallel edge???");
-                            if(edge_w instanceof Shortcut || edge_u instanceof Shortcut)
-                            System.out.println("Shortcut!");
-                            //System.exit(1);
-                        }
-                        //Compute length of path u-v-w, and update max length of those 
-                        int pathLength = edge_u.weight() + edge_w.weight();
-                        if(pathLength > maxDist) { maxDist = pathLength; }
-                }
-        }
+        //int maxDist = 0;
+        //for(int i=0;i<size-1;i++) {
+        //    //Define edge from next neighbour to check, u
+        //    DirectedEdge edge_u = edges.get(i); 
+        //        //Go through additional neighbours whose edge's index is bigger than edge_u
+        //        for(int j=i+1;j<size;j++) { 
+        //            //Define edge from other neighbour, w, to check for witnesspaths (from u to w excluding v)
+        //            DirectedEdge edge_w = edges.get(j); 
+        //                //Debug: Check that we are not having two edges to current node 
+        //                //from the same neighbouring node (parallel edges, u=w)
+        //                if(edge_w.from()==edge_u.from()) {
+        //                    //System.out.println("from: ");
+        //                    //System.out.println(edge_w.from() + " " + edge_u.from());
+        //                    //System.out.println("to ");
+        //                    //System.out.println(edge_w.to() + " " + edge_u.to());
+        //                    System.out.println("Parallel edge???");
+        //                    if(edge_w instanceof Shortcut || edge_u instanceof Shortcut)
+        //                    System.out.println("Shortcut!");
+        //                    //System.exit(1);
+        //                }
+        //                //Compute length of path u-v-w, and update max length of those 
+        //                int pathLength = edge_u.weight() + edge_w.weight();
+        //                if(pathLength > maxDist) { maxDist = pathLength; }
+        //        }
+        //}
         //System.out.println(maxDist);
 
         for(int i= 0; i <size-1;i++) {
@@ -413,6 +420,48 @@ public class ContractedGraph implements IndexedGraph {
     public IndexMinPQ<Integer> getPq() {
         return pq;
     }
+
+
+
+///----------------------------------
+/// Not used for now:
+public void oneHop(int c) {
+        
+    List<DirectedEdge> cbs = G.edgesFrom(c);
+    List<DirectedEdge> acs = G.edgesTo(c);
+    int s = cbs.size();
+    Set<Integer> neighbors = new HashSet<>(s * 2, 1.0f);
+    for (DirectedEdge ac : acs) {
+        int a = ac.from(), w_ac = ac.weight();
+        if (contracted[a]) continue;
+        neighbors.add(a);
+        for (DirectedEdge cb : cbs) {
+            int b = cb.to(), w_cb = cb.weight();
+            if (contracted[b]) continue;
+            if (b == a) continue;
+            neighbors.add(b);
+            boolean witness = false; 
+            for (DirectedEdge e : G.edgesFrom(a)) {
+                if (e.to() != b) continue;
+                if (e.weight() <= w_cb + w_ac) {
+                    witness = true;
+                    break;
+                }
+            }
+            if (!witness) {
+                addShortcut(a, b, c, ac, cb);
+                shortcutsTo[b]++;
+            }
+        }
+
+
+    }
+    contracted[c] = true;
+    for (int n : neighbors) {
+        contractedNeighbours[n]++;
+        if (pq.contains(n)) pq.changeKey(n,rank(n));
+    }
+}
 
 
 }
