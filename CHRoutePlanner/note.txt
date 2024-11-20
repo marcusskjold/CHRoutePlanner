@@ -1,0 +1,17 @@
+Old stats:
+V               = 569586
+E (directed)    = 2337382
+shortcuts       = 581048
+hops            = 0
+Benchmarking interleaving with contracted graph
+mean duration (ms): 6.15
+mean relaxed edges: 10191.08
+found path these amount of times: 100
+Benchmarking bidirectional with uncontracted graph
+mean duration (ms): 160.52
+mean relaxed edges: 248316.47
+found path these amount of times: 100
+
+
+After updating neighbours after contracting node with one neighbour:
+mean relaxed edges: 8931.86
