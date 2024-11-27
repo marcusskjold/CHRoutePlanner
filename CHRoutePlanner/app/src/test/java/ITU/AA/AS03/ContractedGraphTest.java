@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,13 +26,17 @@ public class ContractedGraphTest {
     
 
 
-
+    //-----Different aspects pertaining to the needsShortcutsGraph------
     IndexedGraph needsShortcutsGraph;
     //IndexPQ after initial ordering:
     IndexMinPQ<Integer> initPq;
     //Neighbours for node 9
     LinkedList<DirectedEdge> node9Neighbours;
-    
+    //An example of intermediate rankings:
+    int[] expectedRankings;
+
+
+
     //Fictional neighbours with node where parallel edges exist:
     LinkedList<DirectedEdge> parallelNeighbours;
 
@@ -83,6 +88,12 @@ public class ContractedGraphTest {
         node9Neighbours.add(new DirectedEdge(7, 9, 2));
         node9Neighbours.add(new DirectedEdge(8, 9, 4));
         node9Neighbours.add(new DirectedEdge(10, 9, 3));
+
+        //Initialize values for intermediate rankings (following actual seeming order):
+        expectedRankings = new int[11];
+        expectedRankings[3] = 0;
+        
+
         
         //Initialize neighbourlist with neighbours (two edges between 9 and 5):
         parallelNeighbours = new LinkedList<>();
@@ -124,8 +135,7 @@ public class ContractedGraphTest {
         CG = null;
     }
 
-
-
+    
     //Tests that the initial ordering creates the expected orderings of nodes in the pq
     //TODO: Maybe also test for empty ones
     //TODO: Could also add ranked
@@ -163,7 +173,18 @@ public class ContractedGraphTest {
 
     //TODO: No neighbours maybe?
 
-    //TODO: method for creating list of uncontracted neighbours and test it
+    //Tests that when no neighbours, an empty list is correctly returned
+    @Test void contractedGraph_findUncontractedNeighbours_returnsCorrect() {
+        CG = new ContractedGraph(needsShortcutsGraph); 
+        CG.contractGraph();
+        assertEquals(new LinkedList<DirectedEdge>(), CG.findUncontractedEdges(5));
+    }
+
+    @Test void normalGraph_contractGraph_returnsExpectedRankings() {
+        CG = new ContractedGraph(needsShortcutsGraph); 
+        CG.contractGraph();
+        assertEquals(new LinkedList<DirectedEdge>(), CG.findUncontractedEdges(5));
+    }
 
 
     //How can ranks still be inf after initial ranking, but proper when printed
@@ -172,6 +193,14 @@ public class ContractedGraphTest {
         //CG = new ContractedGraph(smallContractGraph);
         CG = new ContractedGraph(needsShortcutsGraph); 
         CG.contractGraph();
+        DijkstraSimple D1 = new DijkstraSimple(CG);
+        DijkstraInterleaving D2 = new DijkstraInterleaving(CG);
+        D1.calculate(0, 6);
+        System.out.println("simple dijkstra distance: " + D1.distance());
+        D2.calculate(0, 6);
+        System.out.println("Interleaving Dijkstra distance: " + D2.distance());
+
+        //CG.printGraph();
 
         //CG.initialOrdering();
         //IndexMinPQ<Integer> pq = CG.getPq();

@@ -101,6 +101,10 @@ public class Main {
             computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, cgraph, 100, DEFAULT_SEED);
             System.out.println("Benchmarking bidirectional with uncontracted graph");
             computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
+            //System.out.println("Benchmarking Early stop with contracted graph");
+            //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, cgraph, 10, DEFAULT_SEED);
+            //System.out.println("Benchmarking simple dijkstra with contracted graph");
+            //computePairs(AlgorithmType.SIMPLEDIJKSTRA, cgraph, 10, DEFAULT_SEED);
             //Contraction c = new Contraction(graph);
             //c.preProcess();
             //IndexMinPQ<Integer> hierarchy = c.getHierarchy();
@@ -111,6 +115,7 @@ public class Main {
             //}
             //System.out.println(set.size());
             //cgraph.printGraph();
+            //cgraph.printGraphLocs();
         } catch (IOException e) {
             e.printStackTrace();
         }
