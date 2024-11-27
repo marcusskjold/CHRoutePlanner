@@ -63,7 +63,7 @@ public class ContractedGraph implements IndexedGraph {
                 }
             }
             for (DirectedEdge e : G.edgesTo(i)) {
-                if (r <= rank[e.from()]) { //TODO: Should this be "to" in both cases?
+                if (r <= rank[e.from()]) { 
                     higherEdgesTo[i].add(e);
                     degree++;
                 }
@@ -146,7 +146,7 @@ public class ContractedGraph implements IndexedGraph {
         
         while (!pq.isEmpty()) {
             int n = pq.minIndex();
-            //TODO: This isn't updated in the PQ!!!!!
+            
             int r = rank(n); 
             //try this:
             pq.changeKey(n, r);
@@ -154,12 +154,8 @@ public class ContractedGraph implements IndexedGraph {
             //if (pq.keyOf(pq.minIndex()) == r) {
             if (n == pq.minIndex()) {
                 
-                contractNo++;
-                System.out.println("contracting no: " + contractNo);
-                //if (contractNo < 1)             // Doesn't seem to make a differenct
-                //    oneHop(pq.delMin());
-                //else 
-                    //System.out.println("contracting " + n);
+                //contractNo++;
+                //System.out.println("contracting no: " + contractNo);
                 dijkstraContract(pq.delMin());
                 rank[n] = globalRank++;
                 failed = 0;
@@ -216,23 +212,25 @@ public class ContractedGraph implements IndexedGraph {
         int size = edges.size();
         
         //If only one un-contracted neighbor, order is just -1 (link removed and no shortcuts)
-        if(size == 1) return -1; //TODO: Maybe add contracted neighbours here (or negative case)
-
-        //Find max weight path from an edge u to an edge w through v:
-        int maxDist = 0;
-        maxDist = findMaxDist(v, edges);
-        
-        //
-        for(int i=0; i<size-1; i++) {
-            int firstNeighbour = edges.get(i).from();
-            d.localSearch(firstNeighbour, maxDist, v, contracted);
-            for(int j=i+1; j<size; j++) {
-                int secondNeighbour = edges.get(j).from();
-                if(d.distance(secondNeighbour) > edges.get(i).weight() + edges.get(j).weight()) {
-                    shortCutsAdded++;
+        if(size > 1) {
+            //Find max weight path from an edge u to an edge w through v:
+            int maxDist = 0;
+            maxDist = findMaxDist(v, edges);
+            
+            //
+            for(int i=0; i<size-1; i++) {
+                int firstNeighbour = edges.get(i).from();
+                d.localSearch(firstNeighbour, maxDist, v, contracted);
+                for(int j=i+1; j<size; j++) {
+                    int secondNeighbour = edges.get(j).from();
+                    if(d.distance(secondNeighbour) > edges.get(i).weight() + edges.get(j).weight()) {
+                        shortCutsAdded++;
+                    }
                 }
             }
-        }
+
+        } 
+
         //The edge-difference is counted (changes in edges from contraction + contracted neighbours)
         order = (shortCutsAdded - size) + contractedNeighbours[v]; //+ shortcutsTo[v]
         return order;
@@ -285,11 +283,11 @@ public class ContractedGraph implements IndexedGraph {
                     if(directedEdge instanceof Shortcut) {
                         Shortcut s = (Shortcut) directedEdge;
                         allEdges.add(new Shortcut(directedEdge.to(), directedEdge.from(),directedEdge.weight(), s.ut, s.tv, s.c));
-                        System.out.println(s.from() + " " + s.to() + " " + s.c);
+                        System.out.println(s.from() + " " + s.to() + " " + s.weight() + " " + s.c);
                     } 
                     else {
                         allEdges.add(new DirectedEdge(directedEdge.to(), directedEdge.from(), directedEdge.weight()));
-                        System.out.println(directedEdge.from() + " " + directedEdge.to() + " " + -1);
+                        System.out.println(directedEdge.from() + " " + directedEdge.to() + " " + directedEdge.weight() + " " + -1);
                     } 
                 }
             }
@@ -317,11 +315,11 @@ public class ContractedGraph implements IndexedGraph {
                     if(directedEdge instanceof Shortcut) {
                         Shortcut s = (Shortcut) directedEdge;
                         allEdges.add(new Shortcut(directedEdge.to(), directedEdge.from(),directedEdge.weight(), s.ut, s.tv, s.c));
-                        System.out.println(locG.getID(s.from()) + " " + locG.getID(s.to()) + " " + locG.getID(s.c));
+                        System.out.println(locG.getID(s.from()) + " " + locG.getID(s.to()) + " " + s.weight() + " " + locG.getID(s.c));
                     } 
                     else {
                         allEdges.add(new DirectedEdge(directedEdge.to(), directedEdge.from(), directedEdge.weight()));
-                        System.out.println(locG.getID(directedEdge.from()) + " " + locG.getID(directedEdge.to()) + " " + -1);
+                        System.out.println(locG.getID(directedEdge.from()) + " " + locG.getID(directedEdge.to()) + " " + directedEdge.weight() + " " + -1);
                     } 
                 }
             }

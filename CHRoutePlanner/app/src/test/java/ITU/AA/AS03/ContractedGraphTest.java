@@ -193,14 +193,14 @@ public class ContractedGraphTest {
         //CG = new ContractedGraph(smallContractGraph);
         CG = new ContractedGraph(needsShortcutsGraph); 
         CG.contractGraph();
-        DijkstraSimple D1 = new DijkstraSimple(CG);
+        //DijkstraSimple D1 = new DijkstraSimple(CG);
         DijkstraInterleaving D2 = new DijkstraInterleaving(CG);
-        D1.calculate(0, 6);
-        System.out.println("simple dijkstra distance: " + D1.distance());
+        //D1.calculate(0, 6);
+        //System.out.println("simple dijkstra distance: " + D1.distance());
         D2.calculate(0, 6);
         System.out.println("Interleaving Dijkstra distance: " + D2.distance());
 
-        //CG.printGraph();
+        CG.printGraph();
 
         //CG.initialOrdering();
         //IndexMinPQ<Integer> pq = CG.getPq();

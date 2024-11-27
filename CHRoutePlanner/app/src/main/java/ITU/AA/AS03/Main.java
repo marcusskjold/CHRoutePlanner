@@ -63,8 +63,8 @@ public class Main {
             endTime = System.currentTimeMillis();
             totalTime += (endTime - startTime);
             ////debug print-statement:
-            //System.out.println(d);
-            //System.out.println("relaxed edges: " + sp.relaxedEdges());
+            System.out.println(d);
+            System.out.println("relaxed edges: " + sp.relaxedEdges());
 
             totalEdgeRelax += sp.relaxedEdges();
         }
@@ -98,9 +98,9 @@ public class Main {
             ContractedGraph cgraph = new ContractedGraph(graph);
             cgraph.contractGraph();
             System.out.println("Benchmarking interleaving with contracted graph");
-            computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, cgraph, 100, DEFAULT_SEED);
+            computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, cgraph, 10, DEFAULT_SEED);
             System.out.println("Benchmarking bidirectional with uncontracted graph");
-            computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
+            computePairs(AlgorithmType.BIDIJKSTRA, graph, 10, DEFAULT_SEED);
             //System.out.println("Benchmarking Early stop with contracted graph");
             //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, cgraph, 10, DEFAULT_SEED);
             //System.out.println("Benchmarking simple dijkstra with contracted graph");
