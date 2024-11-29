@@ -61,7 +61,7 @@ public class DijkstraInterleaving implements ShortestPathAlgorithm {
         c.reached[s] = true; c.opposite.reached[t] = true;
         c.pq.insert(s, 0);   c.opposite.pq.insert(t, 0);
 
-        findShortestPath();
+        findShortestPath2();
         //System.out.println("shortest path " + d);
 
         if (d < Integer.MAX_VALUE) return true;
@@ -149,6 +149,24 @@ public class DijkstraInterleaving implements ShortestPathAlgorithm {
                 d = dCandidate;
                 meetPoint = v;
             }
+        }
+    }
+
+    private void findShortestPath2() {
+        if (s == t) { d = 0; return; }
+
+        while ((!c.opposite.pq.isEmpty()||!c.opposite.pq.isEmpty()) && ((c.opposite.pq.isEmpty() || d>c.opposite.pq.minKey()) && (c.pq.isEmpty() || d>c.pq.minKey()))){
+
+            if (!c.opposite.pq.isEmpty()) c = c.opposite;
+            else if (c.pq.isEmpty()) return;
+
+            int u = c.pq.delMin();
+            //if (settled[u]) return;
+
+            settled[u] = true;
+            List<DirectedEdge> edges = c.inverted ? G.edgesTo(u)
+                                                  : G.edgesFrom(u);
+            for (DirectedEdge e : edges) relax(e);
         }
     }
 

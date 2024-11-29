@@ -57,13 +57,13 @@ public class ContractedGraph implements IndexedGraph {
             int r = rank[i];
             //System.out.println(r);
             for (DirectedEdge e : G.edgesFrom(i)) {
-                if (r <= rank[e.to()]) {
+                if (r < rank[e.to()]) {
                     higherEdgesFrom[i].add(e);
                     degree++;
                 }
             }
             for (DirectedEdge e : G.edgesTo(i)) {
-                if (r <= rank[e.from()]) { 
+                if (r < rank[e.from()]) { 
                     higherEdgesTo[i].add(e);
                     degree++;
                 }
@@ -250,10 +250,12 @@ public class ContractedGraph implements IndexedGraph {
                 d.localSearch(firstNeighbour, maxDist, v, contracted);
                 for(int j= i+1; j< size; j++ ) {
                     int secondNeighbour = edges.get(j).from();
-                    int currentDistance = edges.get(i).weight() + edges.get(j).weight();
-                    if(d.distance(secondNeighbour) > currentDistance) {
-                        addShortcut(firstNeighbour, secondNeighbour, currentDistance, edges.get(i), edges.get(j), v);
-                        //shortcutsTo[f]++;
+                    if(firstNeighbour!=secondNeighbour){
+                        int currentDistance = edges.get(i).weight() + edges.get(j).weight();
+                        if(d.distance(secondNeighbour) > currentDistance) {
+                            addShortcut(firstNeighbour, secondNeighbour, currentDistance, edges.get(i), edges.get(j), v);
+                            //shortcutsTo[f]++;
+                        }
                     }
                 }
             }
@@ -353,7 +355,7 @@ public class ContractedGraph implements IndexedGraph {
                             //System.out.println("Shortcut!");
                             //System.exit(1);
                             //maybe just continue when parallel edge, since redundant?
-                            //continue;
+                            continue;
                         }
                         //Compute length of path u-v-w, and update max length of those 
                         int pathLength = edge_u.weight() + edge_w.weight();
