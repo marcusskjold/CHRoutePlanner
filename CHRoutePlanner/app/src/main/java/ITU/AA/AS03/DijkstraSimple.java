@@ -43,6 +43,8 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
     public DijkstraSimple(IndexedGraph graph) {
         if (graph == null)
             throw new IllegalArgumentException("Graph must not be null.");
+        if (graph instanceof ContractedGraph)
+            throw new IllegalArgumentException("Cannot calculate on contracted graph");
         V = graph.V();
         if (V < 1)
             throw new IllegalArgumentException("Graph must contain nodes.");

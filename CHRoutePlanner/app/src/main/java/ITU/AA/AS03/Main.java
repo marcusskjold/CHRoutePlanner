@@ -4,38 +4,23 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Random;
 
 public class Main {
 
     private static final long DEFAULT_SEED = 4263372046854775800L;
-    private static final IllegalArgumentException ILLEGALALGORITHM =
-        new IllegalArgumentException("First argument must be one of: " + 
-            Arrays.asList(AlgorithmType.values()));
 
-    enum AlgorithmType {
-        SIMPLEDIJKSTRA,
-        EARLYSTOPDIJKSTRA,
-        BIDIJKSTRA,
-        INTERLEAVINGDIJKSTRA,
-        CONTRACTIONHIERARCHIES
-    }
+    enum AlgorithmType { SIMPLE, EARLYSTOP, BIDIJKSTRA, INTERLEAVING, }
 
-    //Helper method to create new instance of the provided algorithmtype
-    //on the provided graph
+    /** Prepares an instance of a query algorithm on a given graph. */
     private static ShortestPathAlgorithm createAlgorithm(AlgorithmType type, IndexedGraph graph) {
         switch(type) {
-            case SIMPLEDIJKSTRA:
-                return new DijkstraSimple(graph);
-            case EARLYSTOPDIJKSTRA:
-                return new DijkstraEarlyStop(graph);
-            case INTERLEAVINGDIJKSTRA:
-                return new DijkstraInterleaving(graph);
-            case BIDIJKSTRA:
-                return new DijkstraBidirectional(graph);
-            default:
-                throw ILLEGALALGORITHM;
+            case SIMPLE:       return new DijkstraSimple(graph);
+            case EARLYSTOP:    return new DijkstraEarlyStop(graph);
+            case INTERLEAVING: return new DijkstraInterleaving(graph);
+            case BIDIJKSTRA:   return new DijkstraBidirectional(graph);
+            default: throw new IllegalArgumentException(
+                "First argument must be one of: " + Arrays.asList(AlgorithmType.values()));
         }
     }
 
@@ -43,31 +28,24 @@ public class Main {
     //Returns the computed distances in an array
     private static int[] computePairs(AlgorithmType type, IndexedGraph graph, int pairNums, long seed) {
         int[] distances = new int[pairNums];
-        int found = 0; 
-        Random r = new Random(seed);
-        long startTime;
-        long endTime;
-        long totalTime = 0;
-        long totalEdgeRelax = 0;
-        for(int i=0; i<pairNums; i++) {
-            
-            //System.out.println("generating pair no " + (i + 1));
-            int range = graph.V();
+        int found       = 0; 
+        Random r        = new Random(seed);
+        long startTime, endTime, totalTime = 0, totalEdgeRelax = 0;
+
+        for (int i = 0; i < pairNums; i++) {
+            int range  = graph.V();
             int[] pair = new int[]{r.nextInt(range), r.nextInt(range)};
-            int source = pair[0];
-            int target = pair[1];
-            ////debug:
-            //System.out.println("source: " + source);
-            //System.out.println("target: " + target);
-            //System.out.println("starting calculation no: " + i);
+            int source = pair[0], target = pair[1];
             ShortestPathAlgorithm sp = createAlgorithm(type, graph); 
-            startTime = System.currentTimeMillis();
+
+            startTime       = System.currentTimeMillis();              // Start measurement
             if (sp.calculate(source, target)) found++;
-            int d = sp.distance();
-            endTime = System.currentTimeMillis();
-            totalTime += (endTime - startTime);
+            endTime         = System.currentTimeMillis();              // End measurement
+            totalTime      += (endTime - startTime);
+            
+            int d           = sp.distance();
             totalEdgeRelax += sp.relaxedEdges();
-            distances[i] = d;
+            distances[i]    = d;
             ////debug print-statements:
             System.out.println(d);
             System.out.println("relaxed edges: " + sp.relaxedEdges());
@@ -114,9 +92,9 @@ public class Main {
             IndexedGraph graph = new LocationGraph(input);
             System.out.println("finished generating graph");
             //System.out.println("benchmarking simple");
-            //computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 100, DEFAULT_SEED);
+            //computePairs(AlgorithmType.SIMPLE, graph, 100, DEFAULT_SEED);
             //System.out.println("Benchmarking early stop");
-            //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 100, DEFAULT_SEED);
+            //computePairs(AlgorithmType.EARLYSTOP, graph, 100, DEFAULT_SEED);
             //System.out.println("Benchmarking bidirectional");
             //computePairs(AlgorithmType.BIDIJKSTRA, graph, 100, DEFAULT_SEED);
             //System.out.println("Benchmarking bidirectional (old)");
@@ -124,18 +102,14 @@ public class Main {
             System.out.println("Contracting graph");
             ContractedGraph cgraph = new ContractedGraph(graph);
             cgraph.contractGraph();
-            //System.out.println("Benchmarking interleaving with contracted graph");
-            //computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, cgraph, 1000, DEFAULT_SEED);
-            //System.out.println("Benchmarking bidirectional with uncontracted graph");
-            //computePairs(AlgorithmType.BIDIJKSTRA, cgraph, 1000, DEFAULT_SEED);
             //System.out.println("Benchmarking simple dijkstra with uncontracted graph");
-            //computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 1000, DEFAULT_SEED);
+            //computePairs(AlgorithmType.SIMPLE, graph, 1000, DEFAULT_SEED);
             //System.out.println("Benchmarking early stop dijkstra with uncontracted graph");
-            //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, graph, 1000, DEFAULT_SEED);
+            //computePairs(AlgorithmType.EARLYSTOP, graph, 1000, DEFAULT_SEED);
             //System.out.println("Benchmarking Early stop with contracted graph");
-            //computePairs(AlgorithmType.EARLYSTOPDIJKSTRA, cgraph, 10, DEFAULT_SEED);
+            //computePairs(AlgorithmType.EARLYSTOP, cgraph, 10, DEFAULT_SEED);
             //System.out.println("Benchmarking simple dijkstra with contracted graph");
-            //computePairs(AlgorithmType.SIMPLEDIJKSTRA, cgraph, 10, DEFAULT_SEED);
+            //computePairs(AlgorithmType.SIMPLE, cgraph, 10, DEFAULT_SEED);
             //Contraction c = new Contraction(graph);
             //c.preProcess();
             //IndexMinPQ<Integer> hierarchy = c.getHierarchy();
