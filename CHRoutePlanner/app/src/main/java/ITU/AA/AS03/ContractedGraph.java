@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/** NOTICE: Modifies the original graph */
 public class ContractedGraph implements IndexedGraph {
     
     //TODO: Might need to be set higher:
@@ -70,7 +71,6 @@ public class ContractedGraph implements IndexedGraph {
             }
             //System.out.println(degree);
         }
-        System.out.println("Graph contracted");
         System.out.println("V               = " + V());
         System.out.println("E (directed)    = " + E());
         System.out.println("shortcuts       = " + shortcutCount);
