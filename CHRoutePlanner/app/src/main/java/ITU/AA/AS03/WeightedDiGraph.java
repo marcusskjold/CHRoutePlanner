@@ -46,23 +46,6 @@ public class WeightedDiGraph implements IndexedGraph {
         E += 2;
     }
 
-    //Tried adding this (TODO: Doesn't work quite correct since other edge is not shortcut (See solution for now instead))
-    @Override
-    public void addUndirectedEdge(DirectedEdge edge) {
-    
-    // Create the reverse of the given edge
-    DirectedEdge reverseEdge = new DirectedEdge(edge.to(), edge.from(), edge.weight());
-    
-    // Add both directions to edgesFrom and edgesTo
-    edgesFrom[edge.from()].add(edge);
-    edgesTo  [edge.to()]  .add(edge);
-    edgesFrom[edge.to()].add(reverseEdge);
-    edgesTo  [edge.from()].add(reverseEdge);
-    
-    // Increment edge count by 2, as we added two directed edges
-    E += 2;
-}
-
     @Override public List<DirectedEdge> edgesTo(int index)   { return edgesTo[index]; }
 
     @Override public List<DirectedEdge> edgesFrom(int index) { return edgesFrom[index]; }

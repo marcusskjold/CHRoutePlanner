@@ -2,7 +2,6 @@ package ITU.AA.AS03;
 
 public class LocalDijkstra {
     private final static int DEFAULT_LIMIT = 50;
-    //private boolean[] settled;
     private int[] distTo;
     private int[] searchGen; //Which search the node has last been a part of
     private int searchGeneration; //The number/generation of the current search
@@ -21,7 +20,6 @@ public class LocalDijkstra {
         pq                = new IndexMinPQ<>(V); 
         distTo            = new int[V]; 
         searchGen         = new int[V];
-        //settled           = new boolean[V];
         searchGeneration  = 0;
         settledCount      = 0;
         limit             = settleLimit;
@@ -47,7 +45,7 @@ public class LocalDijkstra {
      * and is settled if it is one higher.
      */
     public void localSearch(int source, int distLimit, int ignored) {
-        searchGeneration += 2; //TODO: Is mixes of +1 and ++2 fine?
+        searchGeneration += 2; 
         distTo[source]    = 0;
         settledCount      = 0;
         if (pq.contains(source)) pq.changeKey(source, distTo[source]);
@@ -55,10 +53,10 @@ public class LocalDijkstra {
         
         while(!pq.isEmpty() && settledCount < limit) {
             int node         = pq.delMin();
-            searchGen[node]  = searchGeneration + 1; //Should this be after dist-limit check? -> doesn't matter much, I guess
+            searchGen[node]  = searchGeneration + 1; 
             settledCount++;
             if (distTo[node] > distLimit) return; 
-            for (DirectedEdge e : G.edgesFrom(node)) //edgesFrom rather than to used here
+            for (DirectedEdge e : G.edgesFrom(node)) 
                 relax(e, ignored);
         }
     }
@@ -75,9 +73,9 @@ public class LocalDijkstra {
     private void relax(DirectedEdge e, int ignored) {
         int w = e.to();
         if (w == ignored) return;
-        int fromDist = distTo[e.from()]; //This could maybe be given as parameter, if ignored checked before entering this method (saves a bit)?
+        int fromDist = distTo[e.from()]; 
 
-        int toDist = fromDist + e.weight(); //Maybe toDist could be checked against maxDist here?
+        int toDist = fromDist + e.weight(); 
         if (toDist < fromDist) throw new ArithmeticException(
             "Integer overflow: Distances are too high");
         int gen = searchGen[w];
@@ -90,7 +88,7 @@ public class LocalDijkstra {
         else if (distTo[w] > toDist)     distTo[w] = toDist;
         else                             return;
         
-        if (pq.contains(w)) pq.changeKey(w, toDist); //Could settled node be inserted again in pq (is settled array needed?) (Not in first search, at least)???
+        if (pq.contains(w)) pq.changeKey(w, toDist); 
         else                pq.insert   (w, toDist);
     }
 
@@ -99,7 +97,6 @@ public class LocalDijkstra {
         searchGeneration++;
         //initialize track of settled nodes:
         settledCount = 0;
-        //Initialize the dijkstra search (maybe fine not to check contracted)
         searchGen[source] = searchGeneration++;
         distTo[source] = 0;
         if(pq.contains(source)) {

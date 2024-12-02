@@ -8,9 +8,6 @@ public interface IndexedGraph {
     
     public void addDirectedEdge(DirectedEdge e);
 
-    //Tried adding this
-    public void addUndirectedEdge(DirectedEdge e);
-
     public void addDirectedEdge(int u, int v, int w);
 
     // ============== Getters ==================
@@ -23,5 +20,4 @@ public interface IndexedGraph {
 
     public int V();
 
-    //public String toString();
 }

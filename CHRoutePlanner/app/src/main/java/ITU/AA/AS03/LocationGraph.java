@@ -89,9 +89,6 @@ public class LocationGraph implements IndexedGraph {
 
     @Override public void addDirectedEdge(DirectedEdge e)              { G.addDirectedEdge(e); }
 
-    //Tried to add this
-    @Override public void addUndirectedEdge(DirectedEdge e)              { G.addUndirectedEdge(e); }
-
     @Override public List<DirectedEdge> edgesFrom(int index) { return G.edgesFrom(index); }
 
     @Override public List<DirectedEdge> edgesTo(int index)   { return G.edgesTo(index); }
