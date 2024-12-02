@@ -11,11 +11,19 @@ public class Main {
 
     private static final long DEFAULT_SEED = 4263372046854775800L;
     private static final String DEFAULT_GRAPH = "denmark.graph";
-    private static final int DEFAULT_REPETITIONS = 100;
+    private static final int DEFAULT_REPETITIONS = 1000;
 
     enum AlgorithmType { SIMPLE, EARLYSTOP, BIDIJKSTRA, INTERLEAVING, }
 
-    private record Result(AlgorithmType type, boolean contracted, double meanDuration, double meanEdgesRelaxed, int found, int[] distances) { }
+    private record Result(
+        AlgorithmType type,
+        boolean contracted,
+        double meanDuration,
+        double meanEdgesRelaxed,
+        int found,
+        int[] distances,
+        double meanDistance
+    ) {}
 
     /** Prepares an instance of a query algorithm on a given graph. */
     private static ShortestPathAlgorithm createAlgorithm(AlgorithmType type, IndexedGraph graph) {
@@ -57,11 +65,26 @@ public class Main {
             distances[i]    = sp.distance();
         }
 
-        double timeMean      = (double) totalTime / pairNums;
-        double edgeRelaxMean = (double) totalEdgeRelax / pairNums;
+        double meanTime      = (double) totalTime / pairNums;
+        double meanEdgeRelax = (double) totalEdgeRelax / pairNums;
         boolean isContracted = graph instanceof ContractedGraph;
+        double meanDistance  = averageDistances(distances);
 
-        return new Result(type, isContracted, timeMean, edgeRelaxMean, found, distances);
+        return new Result(type, isContracted, meanTime, meanEdgeRelax, found, distances, meanDistance);
+    }
+
+    private static double averageDistances(int[] distances) {
+        long x = 0;
+        int l = distances.length;
+        int valid = l;
+        for (int i = 0; i < l; i++) {
+            int y = distances[i];
+            if (y < Integer.MAX_VALUE) x += y;
+            else valid--;
+        }
+        if (valid == 0) throw new ArithmeticException("I WILL NOT DIVIDE BY ZERO!!!!");
+        return (double) x / (double) valid;
+
     }
 
     // Method that compares distances found by two different algorithms
@@ -107,7 +130,7 @@ public class Main {
         // ----------------
 
         IndexedGraph graph;
-        System.out.print("Generating graph. ");
+        System.out.print("Generating graph.                      ");
         start = System.currentTimeMillis();
         try {
             graph = new LocationGraph(new FileInputStream(DEFAULT_GRAPH));
@@ -118,12 +141,14 @@ public class Main {
         }
         end = System.currentTimeMillis();
         System.out.println("Finished generating graph in " + (end - start) + " milliseconds.");
+        System.out.printf("Normal graph info:                     Nodes: %d, Edges (undirected): %d%n",
+                            graph.V(), graph.E());
 
         // Uncontracted experiments
         // ------------------------
 
         List<Result> results = new ArrayList<>();
-        System.out.print("Running uncontracted experiments. ");
+        System.out.print("Running uncontracted experiments.      ");
         for (AlgorithmType a : AlgorithmType.values()) {
             Result r = computePairs(a, graph, repetitions, DEFAULT_SEED);
             results.add(r);
@@ -134,70 +159,71 @@ public class Main {
         // -----------------
 
         start = System.currentTimeMillis();
-        System.out.println("Contracting graph. ");
+        System.out.print("Contracting graph.                     ");
         ContractedGraph cgraph = new ContractedGraph(graph);
         cgraph.contractGraph();
         end = System.currentTimeMillis();
         System.out.println("Finished contracting graph in " + (end - start) + " milliseconds.");
+        System.out.printf("Contracted graph info:                 Nodes: %d, Edges (undirected): %d, Of which shortcuts: %d%n",
+                            cgraph.V(), cgraph.E(), cgraph.shortcutCount()*2);
+   
 
         // Contracted experiments
         // ----------------------
 
-        System.out.print("Running contracted experiments. ");
+        System.out.print("Running contracted experiments.        ");
         results.add(computePairs(AlgorithmType.BIDIJKSTRA, cgraph, repetitions, DEFAULT_SEED));
         results.add(computePairs(AlgorithmType.INTERLEAVING, cgraph, repetitions, DEFAULT_SEED));
         System.out.println("Finished running contracted experiments.");
+        System.out.println();
 
-        // Experiment report
-        // -----------------
+        // Calculate resultsets
+        // --------------------
+        int n = results.size();
+        int[] resultsets = new int[n];
+        for (int i = 0; i < n; i++) resultsets[i] = Integer.MAX_VALUE;
+
+        int count = 0;
+        for (int i = 0; i < n; i++) {
+            if (resultsets[i] == Integer.MAX_VALUE) resultsets[i] = count++;
+            for (int j = i + 1; j < n; j++) {
+                if (resultsets[i] < resultsets[j]) {
+                    Result ri = results.get(i), rj = results.get(j);
+                    if (Arrays.equals(ri.distances(), rj.distances()))
+                        resultsets[j] = resultsets[i];
+                }
+            }
+        }
+
+        // Report data
+        // -----------
 
         System.out.println("Results of experiments with " + repetitions + " repetitons");
         System.out.println("Duration and relaxations is the average (mean). Duration is in milliseconds.");
-        System.out.println("algorithm    | contracted | duration | relax   | found");
-        System.out.println("-------------+------------+----------+---------+------");
-        for (Result r : results) {
-            System.out.printf("%-12s | %-10b | %-8.2f | %-7.0f | %-3d%n",
-                r.type, r.contracted, r.meanDuration, r.meanEdgesRelaxed, r.found);
+        System.out.println();
+        System.out.println("algorithm    | contracted | duration | relax   | found | average distance | resultset");
+        System.out.println("-------------+------------+----------+---------+-------+------------------+----------");
+        for (int i = 0; i < n; i++) {
+            Result r = results.get(i);
+            System.out.printf("%-12s | %-10b | %-8.2f | %-7.0f | %-5d | %-16.2f | %-3d%n",
+                r.type, r.contracted, r.meanDuration, r.meanEdgesRelaxed, r.found, r.meanDistance, resultsets[i]);
         }
         System.out.println();
         
         // Error statistics
         // ----------------
 
-        List<Result> distances = new ArrayList<>(results);
-
-        System.out.print("Out of " + distances.size() + " results, ");
-
-        for (int i = 0; i < distances.size(); i++) {
-            for (int j = i + 1; j < distances.size(); j++) {
-                while (Arrays.equals(distances.get(i).distances(), distances.get(j).distances()))
-                    distances.remove(j);
-            }
-        }
-
-        System.out.println(distances.size() + " different set of distances reported");
-        System.out.println("nr | algorithm    | contracted | found | average distance");
-        System.out.println("---+--------------+------------|-------|-----------------");
-        for (Result r : distances) {
-            long x = 0;
-            int l = r.distances.length;
-            int valid = l;
-            for (int i = 0; i < l; i++) {
-                int y = r.distances[i];
-                if (y < Integer.MAX_VALUE) x += y;
-                else valid--;
-            }
-            if (valid == 0) throw new ArithmeticException("I WILL NOT DIVIDE BY ZERO!!!!");
-            double avg = (double) x / (double) valid;
-            System.out.printf("%-2d | %-12s | %-10b | %-5d | %.2f%n",
-                distances.indexOf(r), r.type, r.contracted, r.found, avg);
-        }
-        System.out.println();
-
-        for (int i = 0; i < distances.size(); i++) {
-            for (int j = i + 1; j < distances.size(); j++) {
-                System.out.print("Comparing result " + i + " to result " + j + ":    ");
-                double x = compareDistances(distances.get(i).distances, distances.get(j).distances);
+        count = 0;
+        for (int i = 0; i < n; i++) {
+            int setA = resultsets[i];
+            if (setA != count) continue;
+            count++;
+            for (int j = i + 1; j < n; j++) {
+                int setB = resultsets[j];
+                if (setA >= setB) continue;
+                Result ri = results.get(i), rj = results.get(j);
+                System.out.print("Comparing result set " + setA + " to result " + setB + ":    ");
+                compareDistances(ri.distances, rj.distances);
             }
         }
         

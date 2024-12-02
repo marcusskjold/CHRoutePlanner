@@ -67,10 +67,7 @@ public class ContractedGraph implements IndexedGraph {
             }
             //System.out.println(degree);
         }
-        System.out.println("V               = " + V());
-        System.out.println("E (directed)    = " + E());
-        System.out.println("shortcuts       = " + shortcutCount);
-        System.out.println("hops            = " + contractions);
+        //System.out.println("hops            = " + contractions);
         //System.out.println("total bs contained in map " + bContained);
     }
 
