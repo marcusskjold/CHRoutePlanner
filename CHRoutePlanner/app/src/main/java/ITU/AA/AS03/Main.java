@@ -88,7 +88,7 @@ public class Main {
         int comparableDists = 0;
         for(int i=0;i<distances1.length;i++) {
             int d1 = distances1[i];
-            int d2 = distances1[i];
+            int d2 = distances2[i];
             if(d1 < Integer.MAX_VALUE && d2 < Integer.MAX_VALUE) {
                 totalDiffs += Math.abs(d2 - d1);
                 comparableDists ++;
@@ -124,10 +124,10 @@ public class Main {
             System.out.println("Contracting graph");
             ContractedGraph cgraph = new ContractedGraph(graph);
             cgraph.contractGraph();
-            System.out.println("Benchmarking interleaving with contracted graph");
-            computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, cgraph, 1000, DEFAULT_SEED);
-            System.out.println("Benchmarking bidirectional with uncontracted graph");
-            computePairs(AlgorithmType.BIDIJKSTRA, cgraph, 1000, DEFAULT_SEED);
+            //System.out.println("Benchmarking interleaving with contracted graph");
+            //computePairs(AlgorithmType.INTERLEAVINGDIJKSTRA, cgraph, 1000, DEFAULT_SEED);
+            //System.out.println("Benchmarking bidirectional with uncontracted graph");
+            //computePairs(AlgorithmType.BIDIJKSTRA, cgraph, 1000, DEFAULT_SEED);
             //System.out.println("Benchmarking simple dijkstra with uncontracted graph");
             //computePairs(AlgorithmType.SIMPLEDIJKSTRA, graph, 1000, DEFAULT_SEED);
             //System.out.println("Benchmarking early stop dijkstra with uncontracted graph");
