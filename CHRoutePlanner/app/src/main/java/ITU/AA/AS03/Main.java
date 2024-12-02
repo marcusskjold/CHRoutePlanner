@@ -13,7 +13,7 @@ public class Main {
     private static final String DEFAULT_GRAPH = "denmark.graph";
     private static final int DEFAULT_REPETITIONS = 1000;
 
-    enum AlgorithmType { SIMPLE, EARLYSTOP, BIDIJKSTRA, INTERLEAVING, }
+    public enum AlgorithmType { SIMPLE, EARLYSTOP, BIDIJKSTRA, INTERLEAVING, }
 
     private record Result(
         AlgorithmType type,
@@ -26,7 +26,7 @@ public class Main {
     ) {}
 
     /** Prepares an instance of a query algorithm on a given graph. */
-    private static ShortestPathAlgorithm createAlgorithm(AlgorithmType type, IndexedGraph graph) {
+    public static ShortestPathAlgorithm createAlgorithm(AlgorithmType type, IndexedGraph graph) {
         switch(type) {
             case SIMPLE:       return new DijkstraSimple(graph);
             case EARLYSTOP:    return new DijkstraEarlyStop(graph);
@@ -45,7 +45,7 @@ public class Main {
      * @param seed for the random generator, for reproducibility.
      * @return the resulting distances for comparison / correctness check.
      */
-    private static Result computePairs(AlgorithmType type, IndexedGraph graph, int pairNums, long seed) {
+    public static Result randomPairExperiment(AlgorithmType type, IndexedGraph graph, int pairNums, long seed) {
         Random r = new Random(seed);
         int[] distances = new int[pairNums];
         int found = 0, range = graph.V();
@@ -73,7 +73,7 @@ public class Main {
         return new Result(type, isContracted, meanTime, meanEdgeRelax, found, distances, meanDistance);
     }
 
-    private static double averageDistances(int[] distances) {
+    public static double averageDistances(int[] distances) {
         long x = 0;
         int l = distances.length;
         int valid = l;
@@ -88,7 +88,7 @@ public class Main {
     }
 
     // Method that compares distances found by two different algorithms
-    private static double compareDistances(int[] either, int[] other) {
+    public static double compareDistances(int[] either, int[] other) {
         if (either.length != other.length)
             throw new IllegalArgumentException("The arrays must be the same length");
         int n = either.length, totalDiffs = 0, comparableDists = 0;
@@ -122,63 +122,7 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
-        long start, end;
-        int repetitions = DEFAULT_REPETITIONS;
-
-        // Graph Generation
-        // ----------------
-
-        IndexedGraph graph;
-        System.out.print("Generating graph.                      ");
-        start = System.currentTimeMillis();
-        try {
-            graph = new LocationGraph(new FileInputStream(DEFAULT_GRAPH));
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Failed while generating graph");
-            return;
-        }
-        end = System.currentTimeMillis();
-        System.out.println("Finished generating graph in " + (end - start) + " milliseconds.");
-        System.out.printf("Normal graph info:                     Nodes: %d, Edges (undirected): %d%n",
-                            graph.V(), graph.E());
-
-        // Uncontracted experiments
-        // ------------------------
-
-        List<Result> results = new ArrayList<>();
-        System.out.print("Running uncontracted experiments.      ");
-        for (AlgorithmType a : AlgorithmType.values()) {
-            Result r = computePairs(a, graph, repetitions, DEFAULT_SEED);
-            results.add(r);
-        }
-        System.out.println("Finished running uncontracted experiments. Results are reported at the end.");
-
-        // Graph contraction
-        // -----------------
-
-        start = System.currentTimeMillis();
-        System.out.print("Contracting graph.                     ");
-        ContractedGraph cgraph = new ContractedGraph(graph);
-        cgraph.contractGraph();
-        end = System.currentTimeMillis();
-        System.out.println("Finished contracting graph in " + (end - start) + " milliseconds.");
-        System.out.printf("Contracted graph info:                 Nodes: %d, Edges (undirected): %d, Of which shortcuts: %d%n",
-                            cgraph.V(), cgraph.E(), cgraph.shortcutCount()*2);
-   
-
-        // Contracted experiments
-        // ----------------------
-
-        System.out.print("Running contracted experiments.        ");
-        results.add(computePairs(AlgorithmType.BIDIJKSTRA, cgraph, repetitions, DEFAULT_SEED));
-        results.add(computePairs(AlgorithmType.INTERLEAVING, cgraph, repetitions, DEFAULT_SEED));
-        System.out.println("Finished running contracted experiments.");
-        System.out.println();
-
-        // Calculate resultsets
-        // --------------------
+    public static int[] determineSetsOf(List<Result> results) {
         int n = results.size();
         int[] resultsets = new int[n];
         for (int i = 0; i < n; i++) resultsets[i] = Integer.MAX_VALUE;
@@ -194,6 +138,69 @@ public class Main {
                 }
             }
         }
+        return resultsets;
+    }
+
+    public static void main(String[] args) {
+        long start, end;
+        int repetitions = DEFAULT_REPETITIONS;
+
+        // Graph Generation
+        // ----------------
+
+        System.out.print("Generating graph.                      ");
+
+        IndexedGraph graph;
+        start = System.currentTimeMillis();
+        try {
+            graph = new LocationGraph(new FileInputStream(DEFAULT_GRAPH));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Failed while generating graph");
+            return;
+        }
+        end = System.currentTimeMillis();
+
+        System.out.println("Finished generating graph in " + (end - start) + " milliseconds.");
+        System.out.printf("Normal graph info:                     Nodes: %d, Edges (undirected): %d%n",
+                            graph.V(), graph.E());
+
+        // Uncontracted experiments
+        // ------------------------
+
+        System.out.print("Running uncontracted experiments.      ");
+
+        List<Result> results = new ArrayList<>();
+        for (AlgorithmType a : AlgorithmType.values())
+            results.add(randomPairExperiment(a, graph, repetitions, DEFAULT_SEED));
+
+        System.out.println("Finished running uncontracted experiments. Results are reported at the end.");
+
+        // Graph contraction
+        // -----------------
+
+        System.out.print("Contracting graph.                     ");
+
+        start = System.currentTimeMillis();
+        ContractedGraph cgraph = new ContractedGraph(graph);
+        cgraph.contractGraph();
+        end = System.currentTimeMillis();
+
+        System.out.println("Finished contracting graph in " + (end - start) + " milliseconds.");
+        System.out.printf("Contracted graph info:                 Nodes: %d, Edges (undirected): %d, Of which shortcuts: %d%n",
+                            cgraph.V(), cgraph.E(), cgraph.shortcutCount()*2);
+   
+
+        // Contracted experiments
+        // ----------------------
+
+        System.out.print("Running contracted experiments.        ");
+
+        results.add(randomPairExperiment(AlgorithmType.BIDIJKSTRA, cgraph, repetitions, DEFAULT_SEED));
+        results.add(randomPairExperiment(AlgorithmType.INTERLEAVING, cgraph, repetitions, DEFAULT_SEED));
+
+        System.out.println("Finished running contracted experiments.");
+        System.out.println();
 
         // Report data
         // -----------
@@ -203,17 +210,21 @@ public class Main {
         System.out.println();
         System.out.println("algorithm    | contracted | duration | relax   | found | average distance | resultset");
         System.out.println("-------------+------------+----------+---------+-------+------------------+----------");
+
+        int[] resultsets = determineSetsOf(results);
+        int n = results.size();
         for (int i = 0; i < n; i++) {
             Result r = results.get(i);
             System.out.printf("%-12s | %-10b | %-8.2f | %-7.0f | %-5d | %-16.2f | %-3d%n",
                 r.type, r.contracted, r.meanDuration, r.meanEdgesRelaxed, r.found, r.meanDistance, resultsets[i]);
         }
+
         System.out.println();
         
         // Error statistics
         // ----------------
 
-        count = 0;
+        int count = 0;
         for (int i = 0; i < n; i++) {
             int setA = resultsets[i];
             if (setA != count) continue;
@@ -226,6 +237,5 @@ public class Main {
                 compareDistances(ri.distances, rj.distances);
             }
         }
-        
     }
 }
