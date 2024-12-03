@@ -194,8 +194,7 @@ public class Main {
         System.out.println("Finished contracting graph in " + (end - start) + " milliseconds.");
         System.out.printf("Contracted graph info:                 Nodes: %d, Edges (undirected): %d, Of which shortcuts: %d%n",
                             cgraph.V(), cgraph.E(), cgraph.shortcutCount()*2);
-
-
+             
         // Contracted experiments
         // ----------------------
 
