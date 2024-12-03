@@ -11,7 +11,7 @@ public class Main {
 
     private static final long DEFAULT_SEED = 4263372046854775800L;
     private static final String DEFAULT_GRAPH = "denmark.graph";
-    private static final int DEFAULT_REPETITIONS = 1000;
+    private static final int DEFAULT_REPETITIONS = 10;
 
     public enum AlgorithmType { SIMPLE, EARLYSTOP, BIDIJKSTRA, INTERLEAVING, }
 
@@ -166,7 +166,7 @@ public class Main {
         end = System.currentTimeMillis();
 
         System.out.println("Finished generating graph in " + (end - start) + " milliseconds.");
-        System.out.printf("Normal graph info:                     Nodes: %d, Edges (undirected): %d%n",
+        System.out.printf("Normal graph info:                     Nodes: %d, Edges (directed): %d%n",
                             graph.V(), graph.E());
 
         // Uncontracted experiments

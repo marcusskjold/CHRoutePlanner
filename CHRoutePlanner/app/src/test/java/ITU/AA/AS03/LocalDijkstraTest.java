@@ -2,14 +2,12 @@ package ITU.AA.AS03;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedList;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,7 +17,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 public class LocalDijkstraTest {
     
     LocalDijkstra ld;
-    Contraction c;
+    
 
 
     //A small graph to test contractions on
@@ -33,7 +31,8 @@ public class LocalDijkstraTest {
     int distTo4 = 10;
 
     IndexedGraph smallContractGraphProcessing;
-    boolean[] contracted;
+    boolean[] noContracted;
+    boolean[] intermediateContracted;
 
 
 
@@ -105,19 +104,15 @@ public class LocalDijkstraTest {
         //Additional shortcuts
         smallContractGraphProcessing.addUndirectedEdge(1, 10, 12);
         smallContractGraphProcessing.addUndirectedEdge(6, 9, 11);
-        //The contracted array:
-        contracted = new boolean[11];
-        contracted[2] = true;
-        contracted[7] = true;
-        contracted[8] = true;
+        //The contracted arrays:
+        noContracted = new boolean[11];
 
+        intermediateContracted = new boolean[11];
+        intermediateContracted[2] = true;
+        intermediateContracted[7] = true;
+        intermediateContracted[8] = true;
 
-
-
-
-
-
-
+        
         noNodeGraph = new WeightedDiGraph(0);
       
         tooFarApartGraph = new WeightedDiGraph(4);
@@ -158,34 +153,38 @@ public class LocalDijkstraTest {
     @BeforeEach
     void resetAlgorithm() {
         ld = null;
-        c = null;
     }
 
 
 
     //Case: A single local search from node 0 is performed
     @Test void exceedPMax_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(0, pMax, 1);   
-        assertEquals(settledNodesMax, ld.getSettledCount());
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(0, pMax, 1, noContracted);   
+        assertTrue(ld.settled(0));
+        assertFalse(ld.settled(1));
+        assertTrue(ld.settled(2));
+        assertTrue(ld.settled(3));
+        assertTrue(ld.settled(4));
+        assertFalse(ld.settled(5));
+        assertTrue(ld.settled(6));
+        assertFalse(ld.settled(7));
+        assertTrue(ld.settled(8));
+        assertFalse(ld.settled(9));
+        assertFalse(ld.settled(10));
     }
 
-    @Test void exceedSettledcount_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 4);
-        ld.localSearch(0, pMax, 1);   
-        assertEquals(settledNodesLim4, ld.getSettledCount());
-    }
 
     @Test void exceedPMax_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(0, pMax, 1);   
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(0, pMax, 1, noContracted);   
         assertEquals(distTo2, ld.distance(2));
         assertEquals(distTo4, ld.distance(4));
     }
 
     @Test void nodeNotSettled_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(0, pMax, 1);   
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(0, pMax, 1, noContracted);   
         assertEquals(Integer.MAX_VALUE, ld.distance(7));
         assertEquals(Integer.MAX_VALUE, ld.distance(9));
         assertEquals(Integer.MAX_VALUE, ld.distance(1));
@@ -194,32 +193,35 @@ public class LocalDijkstraTest {
     //Case: Multiple searches from node 0 is performed:
     //
     @Test void MultipleExceedPMax_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(7, pMax, 1); 
-        ld.localSearch(0, pMax, 1);   
-        assertEquals(settledNodesMax, ld.getSettledCount());
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(7, pMax, 1, noContracted); 
+        ld.localSearch(0, pMax, 1, noContracted);   
+        assertTrue(ld.settled(0));
+        assertFalse(ld.settled(1));
+        assertTrue(ld.settled(2));
+        assertTrue(ld.settled(3));
+        assertTrue(ld.settled(4));
+        assertFalse(ld.settled(5));
+        assertTrue(ld.settled(6));
+        assertFalse(ld.settled(7));
+        assertTrue(ld.settled(8));
+        assertFalse(ld.settled(9));
+        assertFalse(ld.settled(10));
     }
 
-    @Test void MultipleExceedSettledcount_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(7, pMax, 1);
-        ld.setLimit(4);
-        ld.localSearch(0, pMax, 1);   
-        assertEquals(settledNodesLim4, ld.getSettledCount());
-    }
 
     @Test void MultipleExceedPMax_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(7, pMax, 1);
-        ld.localSearch(0, pMax, 1);   
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(7, pMax, 1, noContracted);
+        ld.localSearch(0, pMax, 1, noContracted);   
         assertEquals(distTo2, ld.distance(2));
         assertEquals(distTo4, ld.distance(4));
     }
 
     @Test void MultipleNodeNotSettled_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(7, pMax, 1);
-        ld.localSearch(0, pMax, 1);   
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(7, pMax, 1, noContracted);
+        ld.localSearch(0, pMax, 1, noContracted);   
         assertEquals(Integer.MAX_VALUE, ld.distance(7));
         assertEquals(Integer.MAX_VALUE, ld.distance(9));
         assertEquals(Integer.MAX_VALUE, ld.distance(1));
@@ -227,22 +229,21 @@ public class LocalDijkstraTest {
 
     //Case: A search with no connected nodes (Due to nodes being ignored):
     @Test void NoConnection_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 100);
-        ld.localSearch(10, pMax, 7);   
-        assertEquals(1, ld.getSettledCount());
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(10, pMax, 7, noContracted);   
+        assertTrue(ld.settled(10));
     }
 
     @Test void NoConnection_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 100);
-        ld.localSearch(10, pMax, 7);   
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(10, pMax, 7, noContracted);   
         assertEquals(Integer.MAX_VALUE, ld.distance(7));
     }
 
     //Case: A search with nodes too far apart: 
-    @Test void nodesTooFarApart_calculate_throws() {
-        ld = new LocalDijkstra(tooFarApartGraph, 100);
-        //Exception e = assertThrows(ArithmeticException.class, () ->
-            ld.localSearch(sNormal, pMax, 100);
+    @Test void nodesTooFarApart_distance_returnsCorrect() {
+        ld = new LocalDijkstra(tooFarApartGraph);
+        ld.localSearch(sNormal, pMax, 100, noContracted);
         assertEquals(Integer.MAX_VALUE, ld.distance(tNormal));
     }
 
@@ -251,32 +252,35 @@ public class LocalDijkstraTest {
 /// 
 
 @Test void CexceedPMax_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 10);
-        ld.localSearch(0, pMax, 1, contracted);   
-        assertEquals(settledNodesMax, ld.getSettledCount());
-    }
-
-    @Test void CexceedSettledcount_settled_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraph, 4);
-        ld.localSearch(0, pMax, 1, contracted);   
-        assertEquals(settledNodesLim4, ld.getSettledCount());
+        ld = new LocalDijkstra(smallContractGraph);
+        ld.localSearch(0, pMax, 1, intermediateContracted);   
+        assertTrue(ld.settled(0));
+        assertFalse(ld.settled(1));
+        assertFalse(ld.settled(2));
+        assertTrue(ld.settled(3));
+        assertTrue(ld.settled(4));
+        assertTrue(ld.settled(5));
+        assertTrue(ld.settled(6));
+        assertFalse(ld.settled(7));
+        assertFalse(ld.settled(8));
+        assertFalse(ld.settled(9));
+        assertFalse(ld.settled(10));
     }
 
    
     @Test void CexceedPMax_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraphProcessing, 3);
-        ld.localSearch(9, pMax, 1);
-        ld.localSearch(10, pMax, 1, contracted);
-        ld.setLimit(10);
-        ld.localSearch(0, pMax, 1, contracted);   
+        ld = new LocalDijkstra(smallContractGraphProcessing);
+        ld.localSearch(9, pMax, 1, noContracted);
+        ld.localSearch(10, pMax, 1, intermediateContracted);
+        ld.localSearch(0, pMax, 1, intermediateContracted);   
         assertEquals(Integer.MAX_VALUE, ld.distance(2));
         assertEquals(distTo4, ld.distance(4));
         assertEquals(17, ld.distance(9));
     }
 
     @Test void CnodeNotSettled_distance_returnsCorrect() {
-        ld = new LocalDijkstra(smallContractGraphProcessing, 10);
-        ld.localSearch(0, pMax, 1, contracted);   
+        ld = new LocalDijkstra(smallContractGraphProcessing);
+        ld.localSearch(0, pMax, 1, intermediateContracted);   
         assertEquals(Integer.MAX_VALUE, ld.distance(7));
         assertEquals(Integer.MAX_VALUE, ld.distance(1));
     }

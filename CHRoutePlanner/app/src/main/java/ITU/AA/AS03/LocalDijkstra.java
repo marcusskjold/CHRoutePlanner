@@ -1,35 +1,26 @@
 package ITU.AA.AS03;
 
 public class LocalDijkstra {
-    private final static int DEFAULT_LIMIT = 50;
     private int[] distTo;
     private int[] searchGen; //Which search the node has last been a part of
     private int searchGeneration; //The number/generation of the current search
     private IndexedGraph G;
     private IndexMinPQ<Integer> pq;
-    private int settledCount;
 
     public LocalDijkstra(IndexedGraph graph) {
-        this(graph, DEFAULT_LIMIT);
-    }
-
-    public LocalDijkstra(IndexedGraph graph, int settleLimit) {
         G                 = graph;
         int V             = graph.V();
         pq                = new IndexMinPQ<>(V); 
         distTo            = new int[V]; 
         searchGen         = new int[V];
         searchGeneration  = 0;
-        settledCount      = 0;
     }
 
-    // For debugging purposes
-    public int getSettledCount()    { return settledCount; }
-    public boolean reached(int v)   { return searchGen[v] >= searchGeneration; }
+    
     public boolean settled(int v)   { return searchGen[v] > searchGeneration; }
     //Returns distance to target node
     public int distance(int target) {
-        if(reached(target)) return distTo[target];
+        if(settled(target)) return distTo[target];
         else                return Integer.MAX_VALUE;
     }
 
@@ -46,7 +37,6 @@ public class LocalDijkstra {
     public void localSearch(int source, int distLimit, int ignored, boolean[] contracted) {
         searchGeneration += 2;
         distTo[source]    = 0;
-        settledCount      = 0;
         if (pq.contains(source))  pq.changeKey(source, distTo[source]);
         else                      pq.insert   (source, distTo[source]);
         
@@ -54,7 +44,6 @@ public class LocalDijkstra {
             int node        = pq.delMin();
             searchGen[node] = searchGeneration + 1;
             if (contracted[node]) continue;
-            settledCount++;
             if(distTo[node] > distLimit) break;
             for (DirectedEdge e : G.edgesFrom(node)){
                 if (!contracted[e.to()]) {

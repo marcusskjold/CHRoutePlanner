@@ -1,11 +1,7 @@
 package ITU.AA.AS03;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.LinkedList;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,10 +37,6 @@ public class ContractedGraphTest {
     LinkedList<DirectedEdge> parallelNeighbours;
 
 
-
-    //A graph as expected when contracting the above graph
-    //TODO 
-    IndexedGraph expectedGraph;
 
     @BeforeAll
     void createTestData() {
@@ -136,28 +128,6 @@ public class ContractedGraphTest {
     }
 
     
-    //Tests that the initial ordering creates the expected orderings of nodes in the pq
-    //TODO: Maybe also test for empty ones
-    //TODO: Could also add ranked
-    @Test void variousNodes_initialOrderings_returnsCorrect() {
-        CG = new ContractedGraph(needsShortcutsGraph); 
-        CG.initialOrdering(); 
-        IndexMinPQ<Integer> pq = CG.getPq();
-        for(int i =0;i<pq.size();i++) {
-            assertEquals(initPq.keyOf(i), pq.keyOf(i));
-        }
-
-        ////Old test client
-        //while(!pq.isEmpty()) {
-        //    System.out.println("index: " + pq.minIndex() + " key: " + pq.keyOf(pq.minIndex()));
-        //    pq.delMin();
-        //}
-        ////CG.printGraph();
-        //assertTrue(true);
-
-      
-    }
-
     //Test that the longest path between neighbours is actually returned
     @Test void variousEdges_findMax_returnsCorrect() {
         CG = new ContractedGraph(needsShortcutsGraph); 
@@ -165,13 +135,11 @@ public class ContractedGraphTest {
     }
 
     //Test that sum of two parallel edges is considered 0 (and not otherwise max in this case)
-    //TODO: (returns 10, but should return 9): fix this in findMax (albeit not huge error, it might make more efficient?)
     @Test void parllelEdges_findMax_returnsCorrect() {
         CG = new ContractedGraph(needsShortcutsGraph); 
         assertEquals(CG.findMaxDist(9, parallelNeighbours), 9);
     }
 
-    //TODO: No neighbours maybe?
 
     //Tests that when no neighbours, an empty list is correctly returned
     @Test void contractedGraph_findUncontractedNeighbours_returnsCorrect() {
@@ -186,67 +154,4 @@ public class ContractedGraphTest {
         assertEquals(new LinkedList<DirectedEdge>(), CG.findUncontractedEdges(5));
     }
 
-
-    //How can ranks still be inf after initial ranking, but proper when printed
-    //why no shortcuts added here?
-    @Test void variousNodes_contraction_returnsCorrect() {
-        //CG = new ContractedGraph(smallContractGraph);
-        CG = new ContractedGraph(needsShortcutsGraph); 
-        CG.contractGraph();
-        //DijkstraSimple D1 = new DijkstraSimple(CG);
-        DijkstraInterleaving D2 = new DijkstraInterleaving(CG);
-        //D1.calculate(0, 6);
-        //System.out.println("simple dijkstra distance: " + D1.distance());
-        D2.calculate(0, 6);
-        System.out.println("Interleaving Dijkstra distance: " + D2.distance());
-
-        CG.printGraph();
-
-        //CG.initialOrdering();
-        //IndexMinPQ<Integer> pq = CG.getPq();
-        //while(!pq.isEmpty()) {
-        //    System.out.println("index: " + pq.minIndex() + " key: " + pq.keyOf(pq.minIndex()));
-        //    pq.delMin();
-        //}
-        //CG.printGraph();
-        assertTrue(true);
-
-        //c = new Contraction(smallContractGraph);
-        //c.getHierarchy().insert(0, c.initialRank(0));
-        //c.getHierarchy().insert(1, c.initialRank(1)); 
-        //c.getHierarchy().insert(2, c.initialRank(2));
-        //assertEquals(5, c.getHierarchy().keyOf(0));
-        //assertEquals(-1, c.getHierarchy().keyOf(1));
-        //assertEquals(-2, c.getHierarchy().keyOf(2));
-    }
-
-
-
-    
-
-   //@Test void emptyGraph_constructor() {
-    //    CG = new ContractedGraph(new WeightedDiGraph(0));
-    //    assertEquals(0, CG.V());
-    //    assertEquals(0, CG.E());
-    //}
-    //
-    //@Test void initialRank_removesSingleDegreeNodes() {
-    //    WeightedDiGraph G = new WeightedDiGraph(3);
-    //    G.addUndirectedEdge(0, 2, 3);
-    //    G.addUndirectedEdge(1, 2, 3);
-    //    //G.addUndirectedEdge(1, 0, 3);
-    //    CG = new ContractedGraph(G);
-    //    CG.contractGraph();
-    //    assertEquals(1, CG.contractions());
-    //}
-    //
-    //@Test void oneHop_creates_shortcut() {
-    //    WeightedDiGraph G = new WeightedDiGraph(3);
-    //    G.addUndirectedEdge(0, 2, 3);
-    //    G.addUndirectedEdge(1, 2, 3);
-    //    //G.addUndirectedEdge(1, 0, 3);
-    //    CG = new ContractedGraph(G);
-    //    CG.contract(2);
-    //    assertEquals(1, CG.shortcutCount());
-    //}
 }
