@@ -12,7 +12,6 @@ public class DijkstraInterleaving implements ShortestPathAlgorithm {
     private Dijkstra c;
     private int s, t, d, meetPoint, relaxes;
     private boolean ready;
-    private boolean[] settled;
 
     /** Initializes the algorithm for a given graph.
      * Does not compute shortest paths.
@@ -33,7 +32,6 @@ public class DijkstraInterleaving implements ShortestPathAlgorithm {
         c.opposite.opposite = c;
         s = -1; t = -1; relaxes = -1;
         d = Integer.MAX_VALUE;
-        settled = new boolean[V];
         ready = true;
     }
 
@@ -61,8 +59,8 @@ public class DijkstraInterleaving implements ShortestPathAlgorithm {
         c.reached[s] = true; c.opposite.reached[t] = true;
         c.pq.insert(s, 0);   c.opposite.pq.insert(t, 0);
 
-        findShortestPath2();
-        //System.out.println("shortest path " + d);
+        if (G instanceof ContractedGraph) findShortestPathContracted();
+        else                              findShortestPath();
 
         if (d < Integer.MAX_VALUE) return true;
         else return false;
@@ -106,26 +104,63 @@ public class DijkstraInterleaving implements ShortestPathAlgorithm {
 
     // =================== Private helper methods ========================
 
-    private void findShortestPath() {
+    private void findShortestPathContracted() {
         if (s == t) { d = 0; return; }
 
         while (true){
+            if (!c.opposite.pq.isEmpty()) c = c.opposite;
+            else if (c.pq.isEmpty()) return;
 
+            if (d != Integer.MAX_VALUE)
+                if (d <= c.pq.minKey() && (c.opposite.pq.isEmpty() || d <= c.opposite.pq.minKey()))
+                    return;
+
+            int u = c.pq.delMin();
+            List<DirectedEdge> edges = c.inverted ? G.edgesTo(u)
+                                                  : G.edgesFrom(u);
+
+            if (c.distTo[u] != Integer.MAX_VALUE && c.opposite.distTo[u] != Integer.MAX_VALUE) {
+                int dCandidate = c.distTo[u] + c.opposite.distTo[u];
+                if (dCandidate < d) {
+                    if (dCandidate < c.distTo[u]) throw new ArithmeticException(
+                        "Integer overflow: Distances are too high");
+                    d = dCandidate; meetPoint = u;
+                }
+            }
+
+            for (DirectedEdge e : edges) relax(e);
+        }
+    }
+
+    private void findShortestPath() {
+        if (s == t) { d = 0; return; }
+        boolean[]settled = new boolean[G.V()];
+
+        while (true){
             if (!c.opposite.pq.isEmpty()) c = c.opposite;
             else if (c.pq.isEmpty()) return;
 
             int u = c.pq.delMin();
-            if (settled[u]) return;
+            if (settled[u] == true) return;
 
             settled[u] = true;
             List<DirectedEdge> edges = c.inverted ? G.edgesTo(u)
                                                   : G.edgesFrom(u);
+
+            if (c.distTo[u] != Integer.MAX_VALUE && c.opposite.distTo[u] != Integer.MAX_VALUE) {
+                int dCandidate = c.distTo[u] + c.opposite.distTo[u];
+                if (dCandidate < d) {
+                    if (dCandidate < c.distTo[u]) throw new ArithmeticException(
+                        "Integer overflow: Distances are too high");
+                    d = dCandidate; meetPoint = u;
+                }
+            }
+
             for (DirectedEdge e : edges) relax(e);
         }
     }
 
     private void relax(DirectedEdge e) {
-        // Setup & early stopping
         int u, v;
         if (!c.inverted) { u = e.from(); v = e.to(); }
         else             { v = e.from(); u = e.to(); }
@@ -141,33 +176,5 @@ public class DijkstraInterleaving implements ShortestPathAlgorithm {
         else                  c.pq.insert(v, newDist);
         c.reached[v] = true;
 
-        if (c.opposite.reached[v]) {
-            int dCandidate = newDist + c.opposite.distTo[v];
-            if(dCandidate < d) {
-                if (dCandidate < newDist) throw new ArithmeticException(
-                    "Integer overflow: Distances are too high");
-                d = dCandidate;
-                meetPoint = v;
-            }
         }
     }
-
-    private void findShortestPath2() {
-        if (s == t) { d = 0; return; }
-
-        while ((!c.opposite.pq.isEmpty()||!c.opposite.pq.isEmpty()) && ((c.opposite.pq.isEmpty() || d>c.opposite.pq.minKey()) && (c.pq.isEmpty() || d>c.pq.minKey()))){
-
-            if (!c.opposite.pq.isEmpty()) c = c.opposite;
-            else if (c.pq.isEmpty()) return;
-
-            int u = c.pq.delMin();
-            //if (settled[u]) return;
-
-            settled[u] = true;
-            List<DirectedEdge> edges = c.inverted ? G.edgesTo(u)
-                                                  : G.edgesFrom(u);
-            for (DirectedEdge e : edges) relax(e);
-        }
-    }
-
-}

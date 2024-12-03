@@ -11,6 +11,7 @@ public class DirectedEdge {
     public DirectedEdge(int u, int v, int w) {
         if (u < 0) throw new IllegalArgumentException("Vertex names must be non-negative integers");
         if (v < 0) throw new IllegalArgumentException("Vertex names must be non-negative integers");
+        if (w < 0) throw new IllegalArgumentException("Weight must not be negative");
         this.u = u;
         this.v = v;
         this.w = w;

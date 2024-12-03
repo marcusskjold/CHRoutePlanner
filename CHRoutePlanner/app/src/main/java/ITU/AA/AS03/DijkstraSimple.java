@@ -1,7 +1,6 @@
 package ITU.AA.AS03;
 
 import java.util.LinkedList;
-import java.util.Stack;
 
 /** Simple implementation of the Dijsktra algorithm for shortest path point queries.
  *  The {@code DijkstraSimple} class represents a data type for solving the
@@ -23,7 +22,6 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
     protected IndexedGraph G;
     protected IndexMinPQ<Integer> pq;
     protected int t;
-    private int s;
     private int[] distTo;
     private DirectedEdge[] edgeTo;
     private int V;
@@ -55,7 +53,6 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
         distTo = new int[V];         // distTo[v] = distance  of shortest s->v path
         for (int v = 0; v < V; v++) { distTo[v] = Integer.MAX_VALUE; }
 
-        s = -1;
         t = -1;
         edgeRelaxationCount = -1;
         ready = true;
@@ -78,7 +75,6 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
         if (target < 0 || target >= V)
             throw new IllegalArgumentException("target is not a valid node index");
         ready = false;
-        s = source; // TODO: Remove s instance variable????
         t = target;
         distTo[source] = 0;
         pq.insert(source, distTo[source]);
@@ -152,43 +148,4 @@ public class DijkstraSimple implements ShortestPathAlgorithm {
             }
         }
     }
-
-    // ============ Untested Public Helper Methods =============
-
-    //Potential refactoring from calculate to make bidirectional possible
-    //Name could be better
-    //Untested
-    public void setUpSearch(int source, int target) {
-        ready = false;
-        s = source;
-        t = target;
-        distTo[source] = 0;
-        pq.insert(source, distTo[source]);
-        edgeRelaxationCount = 0;
-    }
-
-    //Helper method to make fetching priorityqueue in Bi-Dijkstra possible
-    //Untested
-    public IndexMinPQ<Integer> getPq() {
-        return pq;
-    }
-
-    //Helper method to retreive a specific distance
-    //untested
-    public int distance(int v) {
-        return distTo[v];
-    }
-
-    //Generalized helper method to retreive shortest path to specific vertex
-    //Untested
-    public Iterable<DirectedEdge> retrievePath(int v) {
-        if (ready) return null;                                 // If not calculated
-        if (!(distTo[v] < Integer.MAX_VALUE)) return null;      // If not connected
-        Stack<DirectedEdge> path = new Stack<DirectedEdge>();
-        for (DirectedEdge e = edgeTo[v]; e != null; e = edgeTo[e.from()]) {
-            path.push(e);
-        }
-        return path;
-    }
-
 }

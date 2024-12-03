@@ -76,34 +76,16 @@ public class LocationGraph implements IndexedGraph {
     }
 
     @Override public void addUndirectedEdge(int u, int v, int w) { G.addUndirectedEdge(u, v, w); }
-
     @Override public void addDirectedEdge(int u, int v, int w)   { G.addDirectedEdge  (u, v, w); }
+    @Override public void addDirectedEdge(DirectedEdge e)    { G.addDirectedEdge(e); }
 
     // ============== Getters ==================
-    //
+
     public int getIndex(long id)                             { return idTranslator.get(id); }
-
     public float[] getLocation(int index)                    { return locs[index]; }
-
     public long getID(int index)                             { return ids[index]; }
-
-    @Override public void addDirectedEdge(DirectedEdge e)              { G.addDirectedEdge(e); }
-
     @Override public List<DirectedEdge> edgesFrom(int index) { return G.edgesFrom(index); }
-
     @Override public List<DirectedEdge> edgesTo(int index)   { return G.edgesTo(index); }
-
     @Override public int V()                                 { return G.V(); }
-
     @Override public int E()                                 { return G.E(); }
-
-
-
-    //public String toString() {
-    //    String verticesEtc = "";
-    //    for(int i=0;i<ids.length;i++) {
-    //        verticesEtc += " ";
-    //    }
-    //    return G.toString() + "\n";
-    //}
 }

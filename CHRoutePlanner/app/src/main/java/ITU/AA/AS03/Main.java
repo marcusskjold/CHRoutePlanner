@@ -25,7 +25,9 @@ public class Main {
         double meanDistance
     ) {}
 
-    /** Prepares an instance of a query algorithm on a given graph. */
+    /** Prepares an instance of a query algorithm on a given graph. 
+     * Does not call calculate.
+     */
     public static ShortestPathAlgorithm createAlgorithm(AlgorithmType type, IndexedGraph graph) {
         switch(type) {
             case SIMPLE:       return new DijkstraSimple(graph);
@@ -54,12 +56,12 @@ public class Main {
         for (int i = 0; i < pairNums; i++) {
             int[] pair = new int[]{r.nextInt(range), r.nextInt(range)}; // Setup
             int source = pair[0], target = pair[1];
-            ShortestPathAlgorithm sp = createAlgorithm(type, graph); 
+            ShortestPathAlgorithm sp = createAlgorithm(type, graph);
 
             startTime       = System.currentTimeMillis();               // Measure time
             if (sp.calculate(source, target)) found++;
             endTime         = System.currentTimeMillis();
-            
+
             totalTime      += (endTime - startTime);                    // Collect data
             totalEdgeRelax += sp.relaxedEdges();
             distances[i]    = sp.distance();
@@ -87,7 +89,6 @@ public class Main {
 
     }
 
-    // Method that compares distances found by two different algorithms
     public static double compareDistances(int[] either, int[] other) {
         if (either.length != other.length)
             throw new IllegalArgumentException("The arrays must be the same length");
@@ -98,9 +99,12 @@ public class Main {
             int d1 = either[i], d2 = other[i];
             boolean eitherFound = d1 < Integer.MAX_VALUE;
             boolean otherFound  = d2 < Integer.MAX_VALUE;
-            if (eitherFound && otherFound) {
-                if      (!set && d1 != d2)                 { set = true; eitherLower = (d1 < d2); }
-                else if (set && eitherLower != (d1 <= d2))   disagree = true; 
+            if (eitherFound && otherFound && d1 != d2) {
+                if (!set) {
+                    set = true;
+                    eitherLower = (d1 < d2);
+                } else if (set && eitherLower != (d1 <= d2))
+                    disagree = true;
 
                 totalDiffs += Math.abs(d2 - d1);
                 comparableDists++;
@@ -110,10 +114,10 @@ public class Main {
         // Print and return
         if (comparableDists != 0) {
             double x = (double) totalDiffs / (double) comparableDists;
-            System.out.printf("Average difference: %.2f. ", x);
-            if (disagree)         System.out.println("(No result never had lower distances than the other)");
-            else if (eitherLower) System.out.println("(First result never had lower distances)");
-            else                  System.out.println("(Second result never had lower distances)");
+            System.out.printf("Average difference: %5.2f, with %d disagreements ", x, comparableDists);
+            if (disagree)         System.out.println("(Both had lower distance than the other)");
+            else if (eitherLower) System.out.println("(Second never had lower distance)");
+            else                  System.out.println("(First never had lower distance)");
             return x;
         } else {
             System.out.println("No pairs where both algorithms found a distance");
@@ -175,6 +179,7 @@ public class Main {
             results.add(randomPairExperiment(a, graph, repetitions, DEFAULT_SEED));
 
         System.out.println("Finished running uncontracted experiments. Results are reported at the end.");
+        System.out.println();
 
         // Graph contraction
         // -----------------
@@ -189,7 +194,7 @@ public class Main {
         System.out.println("Finished contracting graph in " + (end - start) + " milliseconds.");
         System.out.printf("Contracted graph info:                 Nodes: %d, Edges (undirected): %d, Of which shortcuts: %d%n",
                             cgraph.V(), cgraph.E(), cgraph.shortcutCount()*2);
-   
+
 
         // Contracted experiments
         // ----------------------
@@ -220,7 +225,7 @@ public class Main {
         }
 
         System.out.println();
-        
+
         // Error statistics
         // ----------------
 
@@ -237,5 +242,7 @@ public class Main {
                 compareDistances(ri.distances, rj.distances);
             }
         }
+        if (count == 1) System.out.println("All algorithms generate the same set of distances. Great!");
+
     }
 }

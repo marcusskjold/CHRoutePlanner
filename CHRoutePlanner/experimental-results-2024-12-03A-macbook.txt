@@ -1,0 +1,24 @@
+> Task :app:run
+Generating graph.                      Finished generating graph in 4268 milliseconds.
+Normal graph info:                     Nodes: 569586, Edges (undirected): 1175286
+Running uncontracted experiments.      Finished running uncontracted experiments. Results are reported at the end.
+
+Contracting graph.                     Finished contracting graph in 13167 milliseconds.
+Contracted graph info:                 Nodes: 569586, Edges (undirected): 2348286, Of which shortcuts: 1173000
+Running contracted experiments.        Finished running contracted experiments.
+
+Results of experiments with 1000 repetitons
+Duration and relaxations is the average (mean). Duration is in milliseconds.
+
+algorithm    | contracted | duration | relax   | found | average distance | resultset
+-------------+------------+----------+---------+-------+------------------+----------
+SIMPLE       | false      | 105.02   | 575241  | 1000  | 9649.68          | 0
+EARLYSTOP    | false      | 53.04    | 287632  | 1000  | 9649.68          | 0
+BIDIJKSTRA   | false      | 50.44    | 232396  | 1000  | 9649.68          | 0
+INTERLEAVING | false      | 45.51    | 208568  | 1000  | 9649.68          | 0
+BIDIJKSTRA   | true       | 0.10     | 338     | 1000  | 9649.68          | 0
+INTERLEAVING | true       | 0.11     | 350     | 1000  | 9649.68          | 0
+
+All algorithms generate the same set of distances. Great!
+
+BUILD SUCCESSFUL in 4m 36s

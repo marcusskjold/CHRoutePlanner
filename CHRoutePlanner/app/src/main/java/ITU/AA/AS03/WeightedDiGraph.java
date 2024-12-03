@@ -1,6 +1,6 @@
 package ITU.AA.AS03;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class WeightedDiGraph implements IndexedGraph {
@@ -11,11 +11,13 @@ public class WeightedDiGraph implements IndexedGraph {
 
     public WeightedDiGraph(int V) {
         if (V < 0) throw new IllegalArgumentException("Graph cannot have negative size");
-        edgesFrom = (LinkedList<DirectedEdge>[]) new LinkedList[V];
-        edgesTo   = (LinkedList<DirectedEdge>[]) new LinkedList[V];
+        @SuppressWarnings("unchecked") List<DirectedEdge>[] x = (ArrayList<DirectedEdge>[]) new ArrayList[V];
+        @SuppressWarnings("unchecked") List<DirectedEdge>[] y = (ArrayList<DirectedEdge>[]) new ArrayList[V];
+        edgesFrom = x;
+        edgesTo   = y;
         for (int i = 0; i < V; i++) {
-            edgesFrom[i] = new LinkedList<>();
-            edgesTo[i]   = new LinkedList<>();
+            edgesFrom[i] = new ArrayList<>();
+            edgesTo[i]   = new ArrayList<>();
         }
         this.V = V;
         E = 0;
@@ -47,12 +49,9 @@ public class WeightedDiGraph implements IndexedGraph {
     }
 
     @Override public List<DirectedEdge> edgesTo(int index)   { return edgesTo[index]; }
-
     @Override public List<DirectedEdge> edgesFrom(int index) { return edgesFrom[index]; }
-
-    @Override public int V() { return V; }
-
-    @Override public int E() { return E; }
+    @Override public int V()                                 { return V; }
+    @Override public int E()                                 { return E; }
 
     // =================== Helper methods =================
     
@@ -66,8 +65,4 @@ public class WeightedDiGraph implements IndexedGraph {
     private void validateEdge(DirectedEdge e) {
         validateEdge(e.from(), e.to(), e.weight());
     }
-
-    //public String toString() {
-    //    return V + " " + E;
-    //}
 }

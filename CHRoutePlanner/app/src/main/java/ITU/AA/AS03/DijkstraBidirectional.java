@@ -11,8 +11,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm {
     private IndexedGraph G;
     private Dijkstra c, r, l;
     private int s, t, d, meetPoint, relaxes;
-    private boolean ready;
-    private boolean[] settled;
+    private boolean ready, contract;
 
     /** Initializes the algorithm for a given graph.
      * Does not compute shortest paths.
@@ -27,13 +26,13 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm {
         int V = graph.V();
         if (V < 1)         throw new IllegalArgumentException("Graph must contain nodes.");
         G = graph;
+        contract = (graph instanceof ContractedGraph);
 
         r = new Dijkstra(V, false);
         l = new Dijkstra(V, true);
         r.opposite = l; l.opposite = r;
         s = -1; t = -1; relaxes = -1;
         d = Integer.MAX_VALUE;
-        settled = new boolean[V];
         ready = true;
     }
 
@@ -61,7 +60,9 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm {
         l.distTo[t] = 0; l.reached[t] = true; l.pq.insert(t, 0);
         c = r;
 
-        findShortestPath();
+        if (contract) findShortestPathContracted();
+        else          findShortestPath();
+        //findShortestPathContracted();
 
         if (d < Integer.MAX_VALUE) return true;
         else return false;
@@ -105,6 +106,7 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm {
 
     private void findShortestPath() {
         if (s == t) { d = 0; return; }
+        boolean[] settled = new boolean[G.V()];
 
         while (true) {
             boolean eR = (r.pq.isEmpty());
@@ -121,6 +123,32 @@ public class DijkstraBidirectional implements ShortestPathAlgorithm {
             settled[u] = true;
             List<DirectedEdge> edges = c.inverted ? G.edgesTo(u)
                                                   : G.edgesFrom(u);
+            for (DirectedEdge e : edges) relax(e);
+        }
+    }
+
+    private void findShortestPathContracted() {
+        if (s == t) { d = 0; return; }
+
+        while (true) {
+            boolean eR = (r.pq.isEmpty());
+            boolean eL = (l.pq.isEmpty());
+            if (eR && eL) return;
+
+            /* The issue is that d is found as the combination of two distances,
+             * but we only break when we hit a single distance that is larger
+             * This makes for horrible performance on normal graphs but is essential for correctness
+             * on contracted graphs. */
+            if (d != Integer.MAX_VALUE)
+                if ((eR || d <= r.pq.minKey()) && (eL || d <= l.pq.minKey()))
+                    return;
+
+            // Determine side
+            if (eR || (!eL && l.pq.minKey() < r.pq.minKey())) c = l;
+            else                                              c = r;
+
+            int u = c.pq.delMin();
+            List<DirectedEdge> edges = c.inverted ? G.edgesTo(u) : G.edgesFrom(u);
             for (DirectedEdge e : edges) relax(e);
         }
     }
