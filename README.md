@@ -7,3 +7,5 @@ A basic implementation of Contraction Hierarchies for efficient route planning i
 
 Simply open the gradle directory, and run gradle with `gradle run` (or use the wrapper).
 The program recreates all experiments and outputs clearly to standard out.
+
+Input-output data (graphs) are found inside app/data.
