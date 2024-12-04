@@ -10,7 +10,7 @@ import java.util.Random;
 public class Main {
 
     private static final long DEFAULT_SEED = 4263372046854775800L;
-    private static final String DEFAULT_GRAPH = "denmark.graph";
+    private static final String DEFAULT_GRAPH = "data/denmark.graph";
     private static final int DEFAULT_REPETITIONS = 1000;
 
     public enum AlgorithmType { SIMPLE, EARLYSTOP, BIDIJKSTRA, INTERLEAVING, }
