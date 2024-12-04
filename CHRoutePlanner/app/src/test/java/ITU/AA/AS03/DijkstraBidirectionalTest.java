@@ -75,6 +75,8 @@ public class DijkstraBidirectionalTest {
         tooFarApartGraph.addUndirectedEdge(0, 1, 1000000000);
         tooFarApartGraph.addUndirectedEdge(1, 2, 1000000000);
         tooFarApartGraph.addUndirectedEdge(2, 3, 1000000000);
+
+        
         // TestData
 
         // No calculation

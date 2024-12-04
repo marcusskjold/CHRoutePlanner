@@ -1,5 +1,9 @@
 package ITU.AA.AS03;
 
+/**
+ * Minimal dijkstra class just containing data. To be used by biderctional dijkstra
+ * implementations.
+ */
 public class Dijkstra {
     IndexMinPQ<Integer> pq;
     int[] distTo;

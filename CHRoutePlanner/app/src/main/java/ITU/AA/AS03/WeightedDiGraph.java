@@ -3,6 +3,10 @@ package ITU.AA.AS03;
 import java.util.ArrayList;
 import java.util.List;
 
+//With inspiration from: https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/EdgeWeightedDigraph.java.html
+
+/**A weighted directed graph. Adjacencylists contained in array of ArrayLists, 
+ * with index corresponding to node */
 public class WeightedDiGraph implements IndexedGraph {
     private int V;
     private int E;

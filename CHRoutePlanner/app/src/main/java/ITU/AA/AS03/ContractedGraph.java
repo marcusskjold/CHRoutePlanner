@@ -5,7 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** NOTICE: Modifies the original graph */
+/** Class representing a contracted graph. Contracts a given graph by constructing an
+ * instance, taking the given graph as parameter, and calling 'contractGraph()'. 
+ * Modifies the original graph */
 public class ContractedGraph implements IndexedGraph {
 
     private final static int MAX_RANK_FAILS = 2000;

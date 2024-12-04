@@ -1,6 +1,6 @@
 package ITU.AA.AS03;
 
-//For now: inspiration from: https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/DirectedEdge.java.html
+//Inspiration from: https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/DirectedEdge.java.html
 
 
 public class DirectedEdge {

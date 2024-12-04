@@ -7,7 +7,9 @@
  *
  ******************************************************************************/
 
- package ITU.AA.AS03;
+package ITU.AA.AS03;
+
+//Inspiration from: https://algs4.cs.princeton.edu/code/edu/princeton/cs/algs4/IndexMinPQ.java.html
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

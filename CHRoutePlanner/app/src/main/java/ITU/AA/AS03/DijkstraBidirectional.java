@@ -3,7 +3,8 @@ package ITU.AA.AS03;
 import java.util.LinkedList;
 import java.util.List;
 
-/** DijsktraBidirectional
+/** DijsktraBidirectional variant that searches from source and target in order of shortest distance from
+ * either source or target.
  *
  */
 public class DijkstraBidirectional implements ShortestPathAlgorithm {

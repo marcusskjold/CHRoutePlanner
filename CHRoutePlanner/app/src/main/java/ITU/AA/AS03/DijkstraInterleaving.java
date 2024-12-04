@@ -3,7 +3,8 @@ package ITU.AA.AS03;
 import java.util.LinkedList;
 import java.util.List;
 
-/** DijkstraBi
+/** DijkstraBidirectional interleaving variant consequently alternating between searching from source and
+ * target node.
  *
  */
 public class DijkstraInterleaving implements ShortestPathAlgorithm {
